@@ -10,7 +10,7 @@ du gabarit Canva).
 **Pour la tâche Cowork elle-même**, inutile de coller tout ce fichier :
 donne-lui simplement une instruction du type *"Récupère et suis
 scrupuleusement les instructions de
-`https://raw.githubusercontent.com/sportingvillette/sv-planning-entrainements/main/scripts/weekend_canva_post_prompt.md`"*.
+`https://raw.githubusercontent.com/sportingvillette/competitions/main/scripts/weekend_canva_post_prompt.md`"*.
 Toute mise à jour de la procédure se fait alors en éditant ce fichier,
 sans retoucher la configuration de la tâche planifiée.
 
@@ -35,10 +35,10 @@ N'ajoute jamais un nouvel élément texte.
 Exécute (Bash) :
 
 ```
-curl -s -o build_weekend_payload.py https://raw.githubusercontent.com/sportingvillette/sv-planning-entrainements/main/scripts/build_weekend_payload.py
+curl -s -o build_weekend_payload.py https://raw.githubusercontent.com/sportingvillette/competitions/main/scripts/build_weekend_payload.py
 python3 build_weekend_payload.py \
-  --calendrier https://sportingvillette.github.io/sv-planning-entrainements/data/calendrier_club.csv \
-  --team-mapping https://sportingvillette.github.io/sv-planning-entrainements/scraper/team_mapping.csv \
+  --calendrier https://sportingvillette.github.io/competitions/data/calendrier_club.csv \
+  --team-mapping https://sportingvillette.github.io/competitions/scraper/team_mapping.csv \
   --out weekend_payload.json
 cat weekend_payload.json
 ```
@@ -286,7 +286,7 @@ lui.
    script `deposit_drive_asset.py` (pas d'accès direct à Google Drive) :
 
    ```
-   curl -s -o deposit_drive_asset.py https://raw.githubusercontent.com/sportingvillette/sv-planning-entrainements/main/scripts/deposit_drive_asset.py
+   curl -s -o deposit_drive_asset.py https://raw.githubusercontent.com/sportingvillette/competitions/main/scripts/deposit_drive_asset.py
    python3 deposit_drive_asset.py --kind weekend_post --subfolder "<weekend_label>" --file 01-couverture.png
    python3 deposit_drive_asset.py --kind weekend_post --subfolder "<weekend_label>" --file 02-a-domicile.png
    ... (une fois par fichier)

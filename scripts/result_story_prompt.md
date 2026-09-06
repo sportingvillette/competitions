@@ -9,7 +9,7 @@ marquage "traité").
 
 **Pour la tâche Cowork elle-même**, inutile de coller tout ce fichier :
 *"Récupère et suis scrupuleusement les instructions de
-`https://raw.githubusercontent.com/sportingvillette/sv-planning-entrainements/main/scripts/result_story_prompt.md`"*
+`https://raw.githubusercontent.com/sportingvillette/competitions/main/scripts/result_story_prompt.md`"*
 suffit.
 
 Tu n'as (Cowork) aucun souvenir d'une conversation précédente sur ce
@@ -45,7 +45,7 @@ paramètre, y compris si tu penses "être sûr" d'être dans le bon créneau —
 c'est le script qui tranche, pas une estimation.
 
 ```
-curl -s -o result_stories.py https://raw.githubusercontent.com/sportingvillette/sv-planning-entrainements/main/scripts/result_stories.py
+curl -s -o result_stories.py https://raw.githubusercontent.com/sportingvillette/competitions/main/scripts/result_stories.py
 python3 result_stories.py list --window-only --out eligible.json
 cat eligible.json
 ```
@@ -113,7 +113,7 @@ toujours travailler sur une copie.
 8. Dépose le PNG téléchargé dans Drive via `deposit_drive_asset.py` (pas
    d'accès direct à Google Drive) :
    ```
-   curl -s -o deposit_drive_asset.py https://raw.githubusercontent.com/sportingvillette/sv-planning-entrainements/main/scripts/deposit_drive_asset.py
+   curl -s -o deposit_drive_asset.py https://raw.githubusercontent.com/sportingvillette/competitions/main/scripts/deposit_drive_asset.py
    python3 deposit_drive_asset.py --kind result_story --subfolder "<match_id>" --file story.png
    ```
    Garde l'URL renvoyée (`{"ok": true, "url": "..."}`) pour le rapport

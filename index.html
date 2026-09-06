@@ -119,7 +119,7 @@
     <div class="btn-row">
       <a class="btn-link" href="https://docs.google.com/spreadsheets/d/1viw-QLYXpA4jNV_bHhfCsBtJ8ueaC0ujXfqtPPpIAq0/edit?usp=sharing" target="_blank" rel="noopener">📊 Ouvrir la base équipes (Google Sheet)</a>
       <a class="btn-link" href="https://docs.google.com/spreadsheets/d/1BoAaOYLMMAhlHO8YGhHvfE-_uLzJ1kUVRiDSzBhLo6E/edit?gid=0#gid=0" target="_blank" rel="noopener">📊 Ouvrir la base matchs (Google Sheet)</a>
-      <a class="btn-link" href="https://github.com/sportingvillette/sv-planning-entrainements" target="_blank" rel="noopener">🐙 Ouvrir le repo GitHub</a>
+      <a class="btn-link" href="https://github.com/sportingvillette/competitions" target="_blank" rel="noopener">🐙 Ouvrir le repo GitHub</a>
     </div>
   </div>
   <div class="panel">
@@ -266,7 +266,7 @@
   <h2>News "résultats du week-end"</h2>
   <div class="subtitle" style="margin-bottom:14px;">Crée sur SportsRégions un brouillon de news (intro générée par IA + tableau des résultats + blocs photos/commentaires) pour le dernier week-end écoulé — reste "Hors ligne", à relire et publier toi-même depuis l'admin SportsRégions. Nécessite le même jeton GitHub que ci-dessus.</div>
   <div class="btn-row">
-    <a class="btn-link" href="https://github.com/sportingvillette/sv-planning-entrainements/edit/main/scripts/weekend_news_intro_style.md" target="_blank" rel="noopener">✏️ Éditer le ton éditorial</a>
+    <a class="btn-link" href="https://github.com/sportingvillette/competitions/edit/main/scripts/weekend_news_intro_style.md" target="_blank" rel="noopener">✏️ Éditer le ton éditorial</a>
     <button onclick="triggerWeekendNews()">🗞️ Rédiger la news du dernier week-end</button>
   </div>
   <div id="status-weekend-news" class="status"></div>
@@ -291,7 +291,7 @@
   <br><br>
   <b>Jeton GitHub pour le rafraîchissement manuel FFHB</b> : crée un
   <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">jeton "fine-grained"</a>
-  limité au repo <code>sv-planning-entrainements</code>, avec uniquement la permission
+  limité au repo <code>competitions</code>, avec uniquement la permission
   <code>Actions: Read and write</code>. Le jeton reste stocké dans ce navigateur (localStorage) —
   il n'est envoyé qu'à l'API GitHub officielle, jamais ailleurs. À refaire sur chaque appareil
   utilisé pour déclencher un rafraîchissement manuel.
@@ -1178,7 +1178,7 @@ const CLASSEMENTS_CLUB_URL = 'data/classements_club.csv';
 // cross-origin.
 const MATCHS_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQvskuueB25qKj0hbDWjFPomFdhfWRduUsNLp6Kv-za4t4oXcbbLsLrNsjwIt0ZH7C9B75pYBGDJfQu/pub?output=csv';
 const LAST_UPDATE_URL = 'data/last_update.json';
-const GH_REPO = 'sportingvillette/sv-planning-entrainements';
+const GH_REPO = 'sportingvillette/competitions';
 const GH_WORKFLOW_FILE = 'scrape-ffhb.yml';
 const GH_WORKFLOW_FILE_SPORTSREGIONS = 'update-sportsregions.yml';
 const GH_WORKFLOW_FILE_WEEKEND_NEWS = 'publish-weekend-news.yml';

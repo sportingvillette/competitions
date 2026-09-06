@@ -34,7 +34,7 @@ SEL_PASSWORD = "#login_password"
 SEL_SUBMIT = "a.bouton_connection"
 SEL_2FA_CODE = "#code_2fa"
 
-# Section CSV (sv-planning-entrainements) -> valeur du <select> SportsRégions
+# Section CSV (competitions) -> valeur du <select> SportsRégions
 # (vérifié dans #select_section_et_discipline_id, 2026-08-14)
 SECTION_VALUES = {
     "Sporting Villette": "17255,0",

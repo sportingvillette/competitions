@@ -31,7 +31,7 @@ from playwright.sync_api import sync_playwright, Page
 
 from sportsregions_pipeline import admin_bridge, ensure_logged_in, get_credentials, login
 
-SITE_URL = "https://sportingvillette.github.io/sv-planning-entrainements/"
+SITE_URL = "https://sportingvillette.github.io/competitions/"
 PAGE_ID = "109233"
 
 GENERATE_JS = """

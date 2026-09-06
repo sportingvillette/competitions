@@ -12,8 +12,8 @@ Source de données : `data/calendrier_club.csv` (un match par ligne) et
 acceptent indifféremment un chemin local ou une URL http(s), ex. les URLs
 GitHub Pages publiques du repo) pour un run sans accès au filesystem local
 (ex. depuis une session planifiée type Cowork) :
-    --calendrier https://sportingvillette.github.io/sv-planning-entrainements/data/calendrier_club.csv
-    --team-mapping https://sportingvillette.github.io/sv-planning-entrainements/scraper/team_mapping.csv
+    --calendrier https://sportingvillette.github.io/competitions/data/calendrier_club.csv
+    --team-mapping https://sportingvillette.github.io/competitions/scraper/team_mapping.csv
 
 Réutilise la même logique de nettoyage de nom d'adversaire et de parsing de
 date que `index.html` (stripCategoryPrefix / splitTrailingIndex /

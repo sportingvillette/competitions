@@ -59,7 +59,7 @@ from sportsregions_pipeline import (
 from push_planning_entrainements import push_planning
 from push_calendriers_classements import push_calendriers_classements
 
-SITE_URL = "https://sportingvillette.github.io/sv-planning-entrainements/"
+SITE_URL = "https://sportingvillette.github.io/competitions/"
 SAISON = "2026-2027"
 
 GENERATE_JS = """

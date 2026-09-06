@@ -1,4 +1,7 @@
-# Contexte du projet — sv-planning-entrainements
+# Contexte du projet — competitions
+(renommé le 06/09/2026, ex `sv-planning-entrainements` — clone local resté
+au chemin/nom `sv-planning-entrainements` par commodité, même pattern que
+le renommage `form-score-club-2-` → `sportingvillette.github.io`)
 
 Ce repo héberge des outils web pour **Sporting Villette** (club de handball,
 Villette d'Anthon, Isère) et ses ententes partenaires. Tout est construit
@@ -46,9 +49,9 @@ fichier. Résumé :
 
 ## Hébergement
 
-- Repo : `sportingvillette/sv-planning-entrainements` (public)
+- Repo : `sportingvillette/competitions` (public)
 - GitHub Pages activé : Settings → Pages → branche `main` / `(root)`
-- URL publique : `https://sportingvillette.github.io/sv-planning-entrainements/`
+- URL publique : `https://sportingvillette.github.io/competitions/`
 - **Important** : l'app fait des `fetch()` vers Google Sheets. Ces requêtes
   échouent si le fichier est ouvert en local (`file://...`) à cause de
   restrictions CORS/navigateur — il faut toujours tester via l'URL GitHub
@@ -61,8 +64,9 @@ fichier. Résumé :
 et Julien donne un "ON MERGE" explicite avant toute fusion sur `main`** —
 jamais de merge sans ce feu vert, même pour un correctif mineur. Une fois
 mergé, supprimer la branche (locale + distante). Ce pattern s'applique aux
-3 repos du projet (`sv-planning-entrainements`, `form-score-club-2-`,
-`form-score-club-photo-only`).
+2 repos actifs du projet (`competitions`, `sportingvillette.github.io`) —
+`form-score-club` et `form-score-club-photo-only` (anciennes versions,
+obsolètes) ont été supprimés le 06/09/2026.
 
 `gh` (GitHub CLI) n'est pas installé dans l'environnement — utiliser `git`
 directement (checkout branche, commit, push, puis merge local de `main` +
@@ -543,7 +547,7 @@ courte sans dépendre du domaine `sportingvillette.com` délégué à
 SportsRégions — clone local resté au chemin/nom `form-score-club-2-` par
 commodité), même workflow de collaboration (branche/PR/"ON MERGE").
 Hébergé sur GitHub Pages : `https://sportingvillette.github.io/`.
-Fichier unique `index.html`, même philosophie que `sv-planning-entrainements`
+Fichier unique `index.html`, même philosophie que `competitions`
 (pas de build, pas de dépendance externe).
 
 ### Deux vues dans la même page, pilotées par `?match_id=`
@@ -611,7 +615,7 @@ d'équipe) générée et maintenue par automatisation plutôt que saisie manuell
   mergée/pushée** — à récupérer avant de continuer ce chantier
   (`git log`/`git diff` sur cette branche localement).
 - `sportsregions_pipeline.py` + `sportsregions_creds.py` — **dans le dossier
-  `97 - python` (repo AT4 séparé, PAS dans `sv-planning-entrainements`)**, à
+  `97 - python` (repo AT4 séparé, PAS dans `competitions`)**, à
   côté de `vpn_connect.py`/`shippingbo_pipeline.py`. Playwright pilote
   `admin.sportsregions.fr` (login+2FA, création/modif d'équipe, upload
   illustration). Identifiants dans le coffre Windows (`keyring`, service
