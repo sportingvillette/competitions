@@ -1269,6 +1269,19 @@ function cleanOpponentLabel(raw) {
   return index ? `${base} - ${index}` : base;
 }
 
+// Compare le nom domicile/extérieur d'un match (déjà nettoyé par scrape_ffhb_club.py avant
+// écriture dans calendrier_club.csv, cf CLAUDE.md) au nom "equipe_ffhb_proposee" de
+// team_mapping.csv (resté brut, ex. "M13F EXC - ENTENTE LYON EST HANDBALL - 1" ou avec un
+// suffixe ajouté à la main comme "(U18)" — cf correctif M18G B). Un simple `includes()` à sens
+// unique échoue dans les deux sens selon le cas ; bidirectionnel comme `findPosInPoule`
+// ci-dessus, qui a le même problème et le résout déjà comme ça.
+function matchesUs(fieldValue, usName) {
+  const a = (fieldValue || '').toUpperCase().trim();
+  const b = (usName || '').toUpperCase().trim();
+  if (!a || !b) return false;
+  return a.includes(b) || b.includes(a);
+}
+
 // ---------- Page SportsRégions "Calendriers, résultats, classements" ----------
 // Construite à partir de scraper/team_mapping.csv (1 ligne = 1 équipe+phase déjà connue,
 // poule_url = lien FFHB de la poule), data/classements_club.csv (classement complet de chaque
@@ -1590,7 +1603,7 @@ async function attachClassementLabels(rows) {
     const ref = mappingRows.find(m => keyMatch(r, m));
     const domicile = r['domicile'] || '';
     const exterieur = r['extérieur'] || '';
-    const usIsDomicile = ref ? domicile.toUpperCase().includes((ref['equipe_ffhb_proposee'] || '').toUpperCase()) : null;
+    const usIsDomicile = ref ? matchesUs(domicile, ref['equipe_ffhb_proposee']) : null;
     const opponentRaw = usIsDomicile === null ? '' : (usIsDomicile ? exterieur : domicile);
 
     const poule = clRows
@@ -1766,7 +1779,7 @@ function renderClassementTable(rows, highlightName) {
   const cols = Object.keys(rows[0]).filter(c => !['section', 'indice', 'categorie', 'phase'].includes(c));
   const head = cols.map(c => `<th>${c}</th>`).join('');
   const body = rows.map(r => {
-    const isUs = highlightName && (r['Club'] || '').toUpperCase().includes(highlightName.toUpperCase());
+    const isUs = matchesUs(r['Club'], highlightName);
     const tds = cols.map(c => `<td>${r[c] ?? ''}</td>`).join('');
     return `<tr${isUs ? ' class="us"' : ''}>${tds}</tr>`;
   }).join('\n');
@@ -1797,7 +1810,7 @@ function renderCalendrierCompletTable(rows, ref, poule) {
 
     const domicile = r['domicile'] || '';
     const exterieur = r['extérieur'] || '';
-    const usIsDomicile = domicile.toUpperCase().includes((ref['equipe_ffhb_proposee'] || '').toUpperCase());
+    const usIsDomicile = matchesUs(domicile, ref['equipe_ffhb_proposee']);
     const opponentRaw = usIsDomicile ? exterieur : domicile;
     const adversaire = opponentRaw ? cleanOpponentLabel(opponentRaw) : `${domicile} – ${exterieur}`;
     const domext = usIsDomicile ? 'DOM' : 'EXT';
