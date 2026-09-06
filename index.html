@@ -167,6 +167,10 @@
     <select id="weekend-select" class="token-input" style="flex:1; min-width:220px;"><option>Chargement...</option></select>
     <button onclick="generateFFHBWeekend()">📆 Afficher ce week-end</button>
   </div>
+  <label style="display:flex; align-items:center; gap:6px; margin:10px 0 0; font-size:14px;">
+    <input type="checkbox" id="filter-villette-only" onchange="renderFFHBFiltered()">
+    N'afficher que les matchs à Villette (VIL) — pour anticiper buvette, arbitrages...
+  </label>
   <div id="status-ffhb" class="status"></div>
   <div id="ffhb-calendrier-content" class="inline-result"></div>
   <div id="last-update-info" class="status"></div>
@@ -1282,6 +1286,17 @@ function matchesUs(fieldValue, usName) {
   return a.includes(b) || b.includes(a);
 }
 
+// Un match "DOM" (nous recevons, via l'entente) n'est pas forcément joué à Villette
+// d'Anthon — l'entente tourne entre les gymnases de ses clubs membres. Même critère que
+// build_weekend_payload.py (colonne "ville" contient "Villette d'Anthon"), avec en plus une
+// normalisation de l'apostrophe : la colonne contient tantôt "Villette D'Anthon", tantôt
+// "Villette d anthon" (espace à la place de l'apostrophe) selon la source du gymnase — les deux
+// doivent matcher, mais surtout pas "Villette Genas" (autre club de l'entente, à ne pas confondre).
+function isVilletteDAnthon(ville) {
+  const norm = (ville || '').toLowerCase().replace(/['’`]/g, ' ').replace(/\s+/g, ' ').trim();
+  return norm.includes('villette d anthon');
+}
+
 // ---------- Page SportsRégions "Calendriers, résultats, classements" ----------
 // Construite à partir de scraper/team_mapping.csv (1 ligne = 1 équipe+phase déjà connue,
 // poule_url = lien FFHB de la poule), data/classements_club.csv (classement complet de chaque
@@ -1612,10 +1627,15 @@ async function attachClassementLabels(rows) {
     const posDom = findPosInPoule(poule, domicile);
     const posExt = findPosInPoule(poule, exterieur);
 
+    let domext = '';
+    if (usIsDomicile !== null) {
+      domext = usIsDomicile ? (isVilletteDAnthon(r['ville']) ? 'VIL' : 'DOM') : 'EXT';
+    }
+
     return {
       ...r,
       _classement: (posDom && posExt) ? `${ordinalFr(posDom)} vs ${ordinalFr(posExt)}` : '',
-      _domext: usIsDomicile === null ? '' : (usIsDomicile ? 'DOM' : 'EXT'),
+      _domext: domext,
       _adversaire: opponentRaw ? cleanOpponentLabel(opponentRaw) : '',
     };
   });
@@ -1703,9 +1723,9 @@ async function generateFFHBWeekend() {
       .map(({ r }) => r);
     const matchesWithClassement = await attachClassementLabels(matches);
 
-    contentEl.innerHTML = renderFFHBTable(matchesWithClassement);
-    contentEl.style.display = 'block';
-    setStatusFFHB(`✅ ${matches.length} match(s) trouvé(s) pour le week-end du ${fmtWeekendLabel(saturday)}.`, 'ok');
+    _lastFFHBRows = matchesWithClassement;
+    _lastFFHBMeta = { verb: 'match(s) trouvé(s)', suffix: `pour le week-end du ${fmtWeekendLabel(saturday)}.` };
+    renderFFHBFiltered();
   } catch (err) {
     console.error(err);
     setStatusFFHB('❌ Erreur : ' + err.message, 'error');
@@ -1716,6 +1736,22 @@ function setStatusFFHB(msg, cls) {
   const el = document.getElementById('status-ffhb');
   el.textContent = msg;
   el.className = 'status' + (cls ? ' ' + cls : '');
+}
+
+// État du dernier lot de matchs affiché (avant filtre "à Villette"), pour pouvoir ré-appliquer
+// le filtre instantanément (coche du checkbox) sans re-télécharger/recalculer le classement.
+let _lastFFHBRows = null;
+let _lastFFHBMeta = { verb: 'match(s) trouvé(s)', suffix: '' };
+
+function renderFFHBFiltered() {
+  if (!_lastFFHBRows) return; // rien encore généré, la case n'a aucun effet
+  const contentEl = document.getElementById('ffhb-calendrier-content');
+  const onlyVillette = document.getElementById('filter-villette-only').checked;
+  const rows = onlyVillette ? _lastFFHBRows.filter(r => r['_domext'] === 'VIL') : _lastFFHBRows;
+  contentEl.innerHTML = renderFFHBTable(rows);
+  contentEl.style.display = 'block';
+  const suffixFiltre = onlyVillette ? ' (à Villette uniquement)' : '';
+  setStatusFFHB(`✅ ${rows.length} ${_lastFFHBMeta.verb} ${_lastFFHBMeta.suffix}${suffixFiltre}`, 'ok');
 }
 
 async function generateFFHBPlanning() {
@@ -1733,9 +1769,9 @@ async function generateFFHBPlanning() {
       .map(({ r }) => r);
     const upcomingWithClassement = await attachClassementLabels(upcoming);
 
-    contentEl.innerHTML = renderFFHBTable(upcomingWithClassement);
-    contentEl.style.display = 'block';
-    setStatusFFHB(`✅ ${upcoming.length} match(s) trouvé(s) pour le week-end du ${fmtDateFr(start)}.`, 'ok');
+    _lastFFHBRows = upcomingWithClassement;
+    _lastFFHBMeta = { verb: 'match(s) trouvé(s)', suffix: `pour le week-end du ${fmtDateFr(start)}.` };
+    renderFFHBFiltered();
   } catch (err) {
     console.error(err);
     setStatusFFHB('❌ Erreur : ' + err.message, 'error');
@@ -1757,9 +1793,9 @@ async function generateFFHBResultats() {
       .map(({ r }) => r);
     const pastWithClassement = await attachClassementLabels(past);
 
-    contentEl.innerHTML = renderFFHBTable(pastWithClassement);
-    contentEl.style.display = 'block';
-    setStatusFFHB(`✅ ${past.length} résultat(s) trouvé(s) pour le week-end du ${fmtDateFr(start)}.`, 'ok');
+    _lastFFHBRows = pastWithClassement;
+    _lastFFHBMeta = { verb: 'résultat(s) trouvé(s)', suffix: `pour le week-end du ${fmtDateFr(start)}.` };
+    renderFFHBFiltered();
   } catch (err) {
     console.error(err);
     setStatusFFHB('❌ Erreur : ' + err.message, 'error');
@@ -1813,7 +1849,7 @@ function renderCalendrierCompletTable(rows, ref, poule) {
     const usIsDomicile = matchesUs(domicile, ref['equipe_ffhb_proposee']);
     const opponentRaw = usIsDomicile ? exterieur : domicile;
     const adversaire = opponentRaw ? cleanOpponentLabel(opponentRaw) : `${domicile} – ${exterieur}`;
-    const domext = usIsDomicile ? 'DOM' : 'EXT';
+    const domext = usIsDomicile ? (isVilletteDAnthon(r['ville']) ? 'VIL' : 'DOM') : 'EXT';
 
     const posDom = findPosInPoule(poule, domicile);
     const posExt = findPosInPoule(poule, exterieur);
