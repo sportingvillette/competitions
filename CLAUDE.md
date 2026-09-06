@@ -46,9 +46,9 @@ fichier. Résumé :
 
 ## Hébergement
 
-- Repo : `sportingvillette-beep/sv-planning-entrainements` (public)
+- Repo : `sportingvillette/sv-planning-entrainements` (public)
 - GitHub Pages activé : Settings → Pages → branche `main` / `(root)`
-- URL publique : `https://sportingvillette-beep.github.io/sv-planning-entrainements/`
+- URL publique : `https://sportingvillette.github.io/sv-planning-entrainements/`
 - **Important** : l'app fait des `fetch()` vers Google Sheets. Ces requêtes
   échouent si le fichier est ouvert en local (`file://...`) à cause de
   restrictions CORS/navigateur — il faut toujours tester via l'URL GitHub
@@ -537,12 +537,12 @@ touché dans ce projet.
 
 ## `form-score-club-2-` — saisie score/photo/commentaire en direct
 
-Repo séparé : `sportingvillette-beep/sportingvillette-beep.github.io`
+Repo séparé : `sportingvillette/sportingvillette.github.io`
 (renommé le 2026-08-26, ex `form-score-club-2-`, pour obtenir une URL
 courte sans dépendre du domaine `sportingvillette.com` délégué à
 SportsRégions — clone local resté au chemin/nom `form-score-club-2-` par
 commodité), même workflow de collaboration (branche/PR/"ON MERGE").
-Hébergé sur GitHub Pages : `https://sportingvillette-beep.github.io/`.
+Hébergé sur GitHub Pages : `https://sportingvillette.github.io/`.
 Fichier unique `index.html`, même philosophie que `sv-planning-entrainements`
 (pas de build, pas de dépendance externe).
 

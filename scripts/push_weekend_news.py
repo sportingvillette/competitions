@@ -47,7 +47,7 @@ from playwright.sync_api import sync_playwright, Page
 
 from sportsregions_pipeline import admin_bridge, ensure_logged_in, get_credentials, login
 
-SITE_URL = "https://sportingvillette-beep.github.io/sv-planning-entrainements/"
+SITE_URL = "https://sportingvillette.github.io/sv-planning-entrainements/"
 HISTORY_DIR = Path(__file__).resolve().parent.parent / "data" / "classements_history"
 INTRO_STYLE_FILE = Path(__file__).resolve().parent / "weekend_news_intro_style.md"
 INTRO_MODEL = "claude-sonnet-5"
