@@ -221,31 +221,41 @@ def fill_news_content(page: Page, news_id: str, *, chapo: str, corps_html: str, 
     page.wait_for_load_state("networkidle")
 
 
-ILLUSTRATION_LABEL = "Illustrations News Site"
+ILLUSTRATION_FILENAME_HINT = "IllustrationsNewsSite"
 
 
-def set_illustration(page: Page, illustration_label: str = ILLUSTRATION_LABEL) -> None:
+def set_illustration(page: Page, filename_hint: str = ILLUSTRATION_FILENAME_HINT) -> None:
     """Sélectionne l'illustration fixe déjà déposée une fois pour toutes dans la Galerie
     SportsRégions (catégorie "Vos illustrations d'actualités") plutôt que d'en uploader une
     nouvelle à chaque run — demande de Julien, 2026-08-31 : une seule image "Résumé du Week
     End" réutilisée à l'identique chaque semaine. Suppose d'être déjà sur la page
     /actualite/edit/<id> (appelée juste après fill_news_content, même page/session).
 
-    `illustration_label` = le texte que Julien a associé à l'image en l'uploadant, censé
-    apparaître en alt/title sur la vignette dans le sélecteur "Galerie" (grille de vignettes
-    sans légende visible constatée par capture d'écran — la correspondance texte visible est un
-    repli au cas où). **Jamais vérifié en conditions réelles** (accès interface indisponible en
-    session pour inspecter le DOM du sélecteur) — le sélecteur exact pourrait nécessiter un
-    ajustement au 1er run réel, ne pas supposer que ça fonctionne du premier coup."""
+    Vérifié en conditions réelles le 2026-09-07 (DOM inspecté en direct) — 2 bugs corrigés par
+    rapport à la version précédente, jamais testée :
+    1. Le sélecteur "Galerie" n'affiche AUCUNE légende visible sous les vignettes. Seul
+       l'attribut `alt` de chaque <img> est exploitable, et ce n'est PAS le libellé donné à
+       l'upload : c'est le chemin serveur complet, ex.
+       "media/uploaded/sites/9492/actualite/6a9553f9e133e_IllustrationsNewsSite.png" (préfixe
+       hash + nom de fichier original, SANS les espaces qu'il avait à l'upload). D'où le
+       matching par sous-chaîne sur le nom de fichier original ("IllustrationsNewsSite", pas
+       "Illustrations News Site").
+    2. "Valider" est un `<input type="button" value="Valider">`, pas un `<button>` — le
+       sélecteur `button:has-text('Valider')` ne matchait donc jamais.
+
+    Le nom de fichier est réutilisé pour un 2e upload (2 vignettes trouvées lors de la
+    vérification) — on prend la dernière du DOM, la plus récemment uploadée (préfixe hash le
+    plus grand). Si Julien reuploade un jour une nouvelle version de l'image, ce comportement
+    reste correct sans changement de code."""
     page.click("text=Galerie")
     page.wait_for_selector("text=Sélectionnez une image", state="visible")
     page.click("text=Vos illustrations d'actualités")
-    page.wait_for_timeout(500)
-    locator = page.locator(f'img[alt="{illustration_label}"], img[title="{illustration_label}"]')
+    page.wait_for_timeout(800)
+    locator = page.locator(f'img.img-thumbnail[alt*="{filename_hint}"]')
     if locator.count() == 0:
-        locator = page.locator(f"text={illustration_label}")
-    locator.first.click()
-    page.click("button:has-text('Valider')")
+        raise RuntimeError(f"Aucune image dans la Galerie avec '{filename_hint}' dans son nom de fichier.")
+    locator.last.click()
+    page.click('input[value="Valider"]')
     page.wait_for_timeout(1000)
 
 
