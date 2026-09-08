@@ -291,10 +291,24 @@ def build_payload(calendrier_source: str, team_mapping_source: str, today: date)
 
         team = team_index.get((section, indice, categorie, phase))
         if team is None:
-            warnings.append(f"Pas de team_mapping trouvé pour {section} / {indice} / {categorie} / {phase}")
-            continue
-        genre = team.get("genre", "")
-        our_name = (team.get("equipe_ffhb_proposee", "") or "").strip()
+            # Repli pour un match "Amical" dont l'équipe/indice n'a pas de championnat FFHB
+            # cette saison (donc jamais ajoutée à team_mapping.csv) — arrivé en vrai le
+            # 2026-09-08 (M13 B/M13 C de l'Entente Lyon Est Handball). sync_amicaux() (voir
+            # scrape_ffhb_club.py) écrit déjà domicile/extérieur en noms propres directement
+            # utilisables (section telle quelle, pas un nom FFHB brut type "M13F EXC - ...") —
+            # donc pas besoin d'equipe_ffhb_proposee pour savoir qui est "nous" ici, contrairement
+            # aux vrais matchs FFHB. Un vrai match FFHB sans mapping reste un warning (pas ce
+            # repli) : ce cas-là signale un vrai problème de données, pas une équipe sans
+            # championnat.
+            if (row.get("journée", "") or "").strip().casefold() != "amical":
+                warnings.append(f"Pas de team_mapping trouvé pour {section} / {indice} / {categorie} / {phase}")
+                continue
+            genre_match = re.search(r"\(([FG])\)\s*$", section)
+            genre = genre_match.group(1) if genre_match else ""
+            our_name = pretty_section(section)
+        else:
+            genre = team.get("genre", "")
+            our_name = (team.get("equipe_ffhb_proposee", "") or "").strip()
 
         domicile_raw = (row.get("domicile", "") or "").strip()
         exterieur_raw = (row.get("extérieur", "") or "").strip()
