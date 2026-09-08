@@ -174,6 +174,18 @@ def pretty_section(section: str) -> str:
     return GENRE_SUFFIX_RE.sub("", section or "").strip()
 
 
+def is_villette_d_anthon(ville: str) -> bool:
+    """La colonne "ville" de calendrier_club.csv contient tantôt "Villette D'Anthon" (avec
+    apostrophe), tantôt "Villette d anthon" (espace à la place de l'apostrophe) selon la source
+    du gymnase — un simple `"villette d'anthon" in ville.casefold()` ne matche donc qu'une des
+    deux variantes et loupe silencieusement des matchs à domicile (bug vécu le 2026-09-08 : un
+    match M13F A à Villette absent de la page "à Villette" du post Instagram alors que
+    confirmé). Même correctif que `isVilletteDAnthon()` côté index.html (JS) — à répercuter des
+    deux côtés si la logique change, cf en-tête de ce fichier."""
+    norm = re.sub(r"\s+", " ", re.sub(r"['’`]", " ", (ville or "").casefold())).strip()
+    return "villette d anthon" in norm
+
+
 def next_saturday(today: date) -> date:
     """Samedi du prochain week-end à venir (si `today` est déjà samedi ou
     dimanche, renvoie le samedi de CE week-end)."""
@@ -349,7 +361,7 @@ def build_payload(calendrier_source: str, team_mapping_source: str, today: date)
         pages[CATEGORIE_TO_PAGE[categorie]].append(entry)
         included_team_keys.add((section, indice, categorie, phase))
 
-        if confirmee and "villette d'anthon" in ville.casefold():
+        if confirmee and is_villette_d_anthon(ville):
             domicile.append({k: entry[k] for k in ("equipe", "jour", "recevant", "visiteur", "us_side", "_sort")})
 
     for p in pages:
