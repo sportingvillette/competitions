@@ -1926,6 +1926,9 @@ async function loadLastUpdate() {
     let msg = 'Dernière mise à jour FFHB : ' + d.toLocaleString('fr-FR');
     if (data.mode === 'partiel') msg += ' (rafraîchissement partiel)';
     if (data.erreurs && data.erreurs.length) msg += ' — ⚠️ erreurs sur ' + data.erreurs.length + ' équipe(s)';
+    if (data.equipes_sans_match && data.equipes_sans_match.length) {
+      msg += ' — ⚠️ ' + data.equipes_sans_match.length + ' équipe(s) avec un lien FFHB mais 0 match (mapping à vérifier) : ' + data.equipes_sans_match.join(', ');
+    }
     el.textContent = msg;
   } catch (err) {
     el.textContent = 'Dernière mise à jour FFHB : inconnue.';

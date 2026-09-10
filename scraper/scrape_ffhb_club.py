@@ -654,6 +654,42 @@ def run_club_scrape(outdir: str):
     save_if(calendrier_club, os.path.join(outdir, "calendrier_club.csv"), "Calendrier club (toutes équipes)")
     save_if(classements_club, os.path.join(outdir, "classements_club.csv"), "Classements club (toutes équipes)")
 
+def find_teams_without_match(full_mapping: pd.DataFrame, final_calendrier: pd.DataFrame, key_cols: list) -> list:
+    """Sécurité demandée par Julien (2026-09-10, suite aux mappings cassés M18G B puis M18G D,
+    tous deux invisibles en silence pendant des jours) : toute équipe de team_mapping.csv qui a
+    un poule_url (donc un vrai championnat FFHB) DOIT avoir au moins 1 ligne dans
+    calendrier_club.csv — si ce n'est pas le cas, c'est très probablement le même piège "club
+    porteur" (equipe_ffhb_proposee qui ne correspond plus au nom affiché par la FFHB, cf
+    CLAUDE.md), pas une absence légitime de match. Porte sur `full_mapping` (TOUTES les équipes
+    mappées, pas seulement celles filtrées par --teams sur ce run précis) et sur
+    `final_calendrier` (déjà fusionné avec les données des runs précédents) — sinon un run
+    partiel masquerait une équipe cassée hors de son périmètre, ou un run qui vient de rescraper
+    une équipe donnée verrait sa propre correction non reflétée avant fusion."""
+    if full_mapping.empty:
+        return []
+    if final_calendrier is None or final_calendrier.empty:
+        return list(full_mapping["id"])
+    # fillna("") AVANT astype(str) des deux côtés — piège déjà documenté ailleurs dans ce
+    # fichier (sync_amicaux) : `v or ""` ne catche PAS NaN (truthy en Python, donne le texte
+    # littéral "nan"), et une colonne vide pour toutes les lignes d'un CSV (ex. "indice" pour
+    # M16/M17, sans indice) est lue par pandas comme NaN, pas "". Première version de cette
+    # fonction utilisait `t.get(c, "") or ""` ligne par ligne — retombait exactement dans ce
+    # piège (indice="nan" côté mapping vs indice="" côté calendrier, aucune équipe sans indice
+    # ne matchait jamais, 2 faux positifs constatés en testant : M16/M17).
+    cal_keys = set(
+        tuple(x) for x in final_calendrier[key_cols].fillna("").astype(str).itertuples(index=False, name=None)
+    )
+    mapping_keys = full_mapping[["id"] + key_cols].fillna("")
+    for c in key_cols:
+        mapping_keys[c] = mapping_keys[c].astype(str)
+    missing = []
+    for _, t in mapping_keys.iterrows():
+        key = tuple(t[c] for c in key_cols)
+        if key not in cal_keys:
+            missing.append(t["id"])
+    return missing
+
+
 def _merge_by_key(prev: pd.DataFrame, new: pd.DataFrame, key_cols: list, preserve_col: str = None) -> pd.DataFrame:
     """Remplace dans `prev` les lignes des équipes présentes dans `new` (par key_cols),
     garde le reste de `prev` intact, ajoute les lignes de `new`.
@@ -746,6 +782,11 @@ def run_club_scrape_ci(mapping_dir: str, outdir: str, teams_filter: str):
     # saisis manuellement — voir build_weekend_payload.py) : rien à scraper pour elles, sans
     # ce filtre le run nocturne échouerait dessus (URL vide) à chaque passage.
     mapping = mapping[(mapping["equipe_ffhb_proposee"] != "") & (mapping["poule_url"] != "")]
+    # Copie AVANT le filtre --teams (qui suit) : sert à la vérification finale "toute équipe
+    # avec un lien de poule doit avoir au moins 1 match dans calendrier_club.csv", qui doit
+    # porter sur TOUTES les équipes mappées, même sur un run partiel qui n'en re-scrape que
+    # certaines — sinon un run partiel masquerait les équipes cassées hors de son périmètre.
+    full_mapping = mapping.copy()
 
     ids_filter = [s.strip() for s in teams_filter.split(",") if s.strip()] if teams_filter else []
     if ids_filter:
@@ -807,17 +848,35 @@ def run_club_scrape_ci(mapping_dir: str, outdir: str, teams_filter: str):
     save_if(final_calendrier, calendrier_path, "Calendrier club")
     save_if(final_classements, classements_path, "Classements club")
 
+    equipes_sans_match = find_teams_without_match(full_mapping, final_calendrier, key_cols)
+    if equipes_sans_match:
+        print(
+            f"\n⚠ {len(equipes_sans_match)} équipe(s) avec un lien de poule FFHB mais 0 match "
+            f"dans calendrier_club.csv (mapping probablement faux, cf CLAUDE.md 'club porteur') : "
+            + ", ".join(equipes_sans_match)
+        )
+
     status = {
         "derniere_maj": datetime.datetime.now(datetime.timezone.utc).isoformat(),
         "mode": "partiel" if ids_filter else "complet",
         "equipes_rafraichies": refreshed_ids,
         "erreurs": erreurs,
+        "equipes_sans_match": equipes_sans_match,
     }
     with open(os.path.join(outdir, "last_update.json"), "w", encoding="utf-8") as f:
         json.dump(status, f, ensure_ascii=False, indent=2)
-    print(f"\n✔ last_update.json -> {len(refreshed_ids)} équipe(s) rafraîchie(s), {len(erreurs)} erreur(s).")
-    post_progress(team_total, team_total, "", done=True, error=(", ".join(erreurs) if erreurs else None))
-    if erreurs:
+    print(
+        f"\n✔ last_update.json -> {len(refreshed_ids)} équipe(s) rafraîchie(s), {len(erreurs)} erreur(s), "
+        f"{len(equipes_sans_match)} équipe(s) sans match malgré un lien FFHB."
+    )
+    all_problems = erreurs + equipes_sans_match
+    post_progress(team_total, team_total, "", done=True, error=(", ".join(all_problems) if all_problems else None))
+    if all_problems:
+        # Fait échouer le run (notification GitHub Actions) même si equipes_sans_match est seul
+        # en cause — une équipe avec lien FFHB et 0 match est presque toujours un mapping cassé
+        # (cf find_teams_without_match), pas une absence légitime : mérite d'être vu tout de
+        # suite plutôt que découvert par hasard des jours plus tard (vécu 2 fois, M18G B puis
+        # M18G D).
         sys.exit(1)
 
 def main():
