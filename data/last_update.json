@@ -1,8 +1,23 @@
 {
-  "derniere_maj": "2026-09-10T07:13:54.031842+00:00",
-  "mode": "partiel",
+  "derniere_maj": "2026-09-11T01:28:38.782721+00:00",
+  "mode": "complet",
   "equipes_rafraichies": [
-    "Entente_Villette_Genas_D_M18_P1"
+    "Entente_Lyon_Est_Handball_F_M16_P1",
+    "Entente_Lyon_Est_Handball_F_A_M18_P1",
+    "Entente_Lyon_Est_Handball_F_A_Seniors_P1",
+    "Entente_Lyon_Est_Handball_F_B_Seniors_P1",
+    "Entente_Est_Lyonnais_G_R_s_M15_P1",
+    "Entente_Est_Lyonnais_G_M17_P1",
+    "Entente_Lyon_Est_Handball_F_A_M13_P1",
+    "Entente_Villette_Genas_A_M13_P1",
+    "Entente_Lyon_Est_Handball_F_A_M15_P1",
+    "Entente_Est_Lyonnais_G_B_M15_P1",
+    "Entente_Villette_Genas_C_M15_P1",
+    "Entente_Villette_Genas_D_M18_P1",
+    "Entente_Est_Lyonnais_G_A_M18_P1",
+    "Entente_Villette_Genas_C_M18_P1",
+    "Entente_Est_Lyonnais_G_B_M18_P1"
   ],
-  "erreurs": []
+  "erreurs": [],
+  "equipes_sans_match": []
 }
