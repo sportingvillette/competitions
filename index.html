@@ -1436,11 +1436,43 @@ function renderWeekendResultsTable(rows, mappingRows, classementsRows, historyTe
     return a.label.localeCompare(b.label);
   });
 
+  // Pastille V/D/N (victoire/défaite/nul) à côté du score, du point de vue de NOTRE équipe —
+  // demande de Julien, 2026-09-XX. Rouge/vert repris de l'évolution de classement juste
+  // au-dessus (classementCell) pour rester cohérent avec la même palette dans ce même bloc.
+  // Nom "nous" = ref['equipe_ffhb_proposee'] (team_mapping.csv) si trouvé, sinon repli sur le
+  // nom de section du match lui-même (r['section'], toujours présent y compris pour un amical
+  // sans mapping — mêmes équipes M13 B/C sans championnat officiel que le piège déjà documenté
+  // dans ce fichier pour sync_amicaux). matchesUs() testé des deux côtés (dom ET ext) : si les
+  // deux matchent ou aucun ne matche, on ne sait pas laquelle est nous -> pas de pastille plutôt
+  // qu'un résultat potentiellement faux.
+  function resultBadge(r, ref) {
+    const usName = ref ? ref['equipe_ffhb_proposee'] : stripGenreSuffix(r['section'] || '');
+    if (!usName) return '';
+    const dom = r['domicile'] || '', ext = r['extérieur'] || '';
+    const domMatch = matchesUs(dom, usName), extMatch = matchesUs(ext, usName);
+    let usIsDomicile;
+    if (domMatch && !extMatch) usIsDomicile = true;
+    else if (extMatch && !domMatch) usIsDomicile = false;
+    else return '';
+    const m = String(r['score'] || '').match(/^(\d+)\s*-\s*(\d+)\s*$/);
+    if (!m) return '';
+    const scoreDom = parseInt(m[1], 10), scoreExt = parseInt(m[2], 10);
+    const ourScore = usIsDomicile ? scoreDom : scoreExt;
+    const theirScore = usIsDomicile ? scoreExt : scoreDom;
+    if (ourScore === theirScore) return ' <span style="color:#777"><b>(N)</b></span>';
+    const won = ourScore > theirScore;
+    return ` <span style="color:${won ? '#2e7d32' : '#c0392b'}"><b>(${won ? 'V' : 'D'})</b></span>`;
+  }
+
   const body = enriched.map(({ r, ref, label, section }) => {
     const dom = r['domicile'] || '';
     const ext = r['extérieur'] || '';
     const score = r['score'] || '';
-    return `<tr><td><b>${section}</b><br>${label}</td><td>${dom}</td><td><b>${score}</b></td><td>${ext}</td><td>${classementCell(ref)}</td></tr>`;
+    // Un match amical n'a pas de classement de championnat associé à afficher — indiqué
+    // explicitement plutôt que de laisser la case vide (demande de Julien).
+    const isAmical = (r['journée'] || '').trim().toLowerCase() === 'amical';
+    const classement = isAmical ? 'Amical' : classementCell(ref);
+    return `<tr><td><b>${section}</b><br>${label}</td><td>${dom}</td><td><b>${score}</b>${resultBadge(r, ref)}</td><td>${ext}</td><td>${classement}</td></tr>`;
   }).join('');
 
   if (!enriched.length) {
@@ -1448,7 +1480,7 @@ function renderWeekendResultsTable(rows, mappingRows, classementsRows, historyTe
   }
 
   return `<table border="1" cellpadding="6" cellspacing="0">
-<tr><th style="background-color:#1a1a1a;color:#ffffff">Équipe</th><th style="background-color:#1a1a1a;color:#ffffff">Domicile</th><th style="background-color:#1a1a1a;color:#ffffff">Score</th><th style="background-color:#1a1a1a;color:#ffffff">Extérieur</th><th style="background-color:#1a1a1a;color:#ffffff">Classement</th></tr>
+<tr><th style="background-color:#1a1a1a;color:#ffffff">Équipe</th><th style="background-color:#1a1a1a;color:#ffffff">Équipe recevante</th><th style="background-color:#1a1a1a;color:#ffffff">Score</th><th style="background-color:#1a1a1a;color:#ffffff">Équipe visiteuse</th><th style="background-color:#1a1a1a;color:#ffffff">Classement</th></tr>
 ${body}
 </table>`;
 }
@@ -1479,10 +1511,11 @@ function renderWeekendTeamBlocks(rows) {
     // align="center" (attribut HTML, pas une règle CSS) + width en attribut HTML plutôt qu'en
     // style — même raison que align="center" sur <table> ailleurs dans ce fichier : survit au
     // filtrage de l'éditeur SportsRégions, contrairement à du CSS inline. Les photos (souvent
-    // des photos de téléphone à pleine résolution) s'affichaient énormes avec juste
-    // max-width:100% (style CSS, pas de garantie de survie + 100% d'une colonne d'article reste
-    // grand) — largeur fixe à 480px, centrée. Demande de Julien, 2026-08-31.
-    const photoPart = photo ? `<p align="center"><img src="${photo}" alt="${label}" width="480" style="max-width:100%;"></p>` : '';
+    // des photos de téléphone à pleine résolution) s'affichaient énormes — largeur fixe 480px
+    // d'abord (2026-08-31), réduite à 200px sur demande de Julien (2026-09-XX) ; width="200" en
+    // attribut couvre déjà le cas courant (photo plus large que haute), max-height en style est
+    // gardé en complément pour une photo au format portrait, au cas où le style survit au filtre.
+    const photoPart = photo ? `<p align="center"><img src="${photo}" alt="${label}" width="200" style="max-width:200px;max-height:200px;"></p>` : '';
     const comment = (r['Commentaire'] || '').trim();
     const commentPart = comment ? `<p><i>« ${comment} »</i></p>` : '';
     return `<p>&nbsp;</p>
@@ -1537,7 +1570,11 @@ function summarizeWeekendForAI(resultRows, mappingRows, classementsRows, history
     const dom = r['domicile'] || '';
     const ext = r['extérieur'] || '';
     const score = r['score'] || '';
-    return `- ${label} : ${dom} ${score} ${ext}${classementSuffix(ref)}`;
+    // Même règle "Amical" que renderWeekendResultsTable (classementCell) — ne pas laisser l'IA
+    // recevoir/afficher un classement de championnat pour un match hors championnat.
+    const isAmical = (r['journée'] || '').trim().toLowerCase() === 'amical';
+    const suffix = isAmical ? ' (Amical)' : classementSuffix(ref);
+    return `- ${label} : ${dom} ${score} ${ext}${suffix}`;
   });
 
   const commentLines = teamBlockRows
