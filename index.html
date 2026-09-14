@@ -1644,7 +1644,10 @@ async function attachClassementLabels(rows) {
 // "Week-end à venir" = du prochain samedi 00:00 au dimanche 23:59 (aujourd'hui inclus si on est déjà sam/dim).
 function nextWeekendRange(now) {
   const day = now.getDay();
-  const daysToSat = (6 - day + 7) % 7;
+  // Cas dimanche à part : (6-day+7)%7 donnait +6 (le PROCHAIN samedi, dans 6 jours) au lieu de
+  // -1 (le samedi d'hier, week-end toujours en cours) — l'appli sautait le bon week-end tous les
+  // dimanches (repéré par Julien sur le site de saisie des scores, 2026-09-14, même bug ici).
+  const daysToSat = day === 0 ? -1 : (6 - day + 7) % 7;
   const start = new Date(now); start.setHours(0, 0, 0, 0); start.setDate(start.getDate() + daysToSat);
   const end = new Date(start); end.setDate(end.getDate() + 1); end.setHours(23, 59, 59, 999);
   return [start, end];
