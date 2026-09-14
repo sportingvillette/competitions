@@ -86,6 +86,7 @@ function doPost(e) {
       if (p.action === 'add_score') return jsonResponse(updateScore(p));
       if (p.action === 'add_photo') return jsonResponse(addPhoto(p));
       if (p.action === 'select_photo') return jsonResponse(selectPhoto(p));
+      if (p.action === 'delete_photo') return jsonResponse(deletePhoto(p));
       if (p.action === 'mark_story_done') return jsonResponse(markStoryDone(p));
       if (p.action === 'add_asset') return jsonResponse(addAsset(p));
       if (p.action === 'save_amical_match') return jsonResponse(saveAmicalMatch(p));
@@ -416,7 +417,57 @@ function addPhoto(p) {
   file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
   const url = 'https://lh3.googleusercontent.com/d/' + file.getId();
 
-  return { ok: true, action: 'photo_added', url: url, fileId: file.getId() };
+  // 1ère photo du match (aucune photo officielle choisie pour l'instant) -> devient
+  // automatiquement la photo officielle, pour éviter le clic "Choisir comme officielle"
+  // systématique dans le cas le plus courant (une seule photo par match). Les photos
+  // suivantes n'écrasent jamais une sélection déjà faite. Demande de Julien, 2026-09-XX.
+  const rowRange = sheet.getRange(rowNumber, 1, 1, COLUMNS.length);
+  const current = rowRange.getValues()[0];
+  let madeOfficial = false;
+  if (!current[colIndex('PhotoEq')]) {
+    current[colIndex('PhotoEq')] = url;
+    rowRange.setValues([current]);
+    madeOfficial = true;
+  }
+
+  return { ok: true, action: 'photo_added', url: url, fileId: file.getId(), madeOfficial: madeOfficial };
+}
+
+/**
+ * Supprime définitivement une photo de la galerie d'un match (fichier Drive envoyé à la
+ * corbeille) — déclenché par la croix de suppression sur chaque vignette de la galerie,
+ * confirmation déjà faite côté client avant l'appel. Si la photo supprimée était la photo
+ * officielle (PhotoEq), la colonne est vidée : jamais de lien mort réutilisé ensuite par la
+ * news hebdo ou le post Instagram.
+ */
+function deletePhoto(p) {
+  if (!p.match_id) return { ok: false, error: 'match_id manquant' };
+  if (!p.photo_url) return { ok: false, error: 'photo_url manquant' };
+
+  const fileId = extractFileIdFromUrl(p.photo_url);
+  if (!fileId) return { ok: false, error: 'URL de photo invalide' };
+  try {
+    DriveApp.getFileById(fileId).setTrashed(true);
+  } catch (err) {
+    return { ok: false, error: 'Fichier introuvable ou déjà supprimé' };
+  }
+
+  const sheet = getSheet();
+  const rowNumber = findRowByCode(sheet, p.match_id);
+  if (rowNumber) {
+    const rowRange = sheet.getRange(rowNumber, 1, 1, COLUMNS.length);
+    const current = rowRange.getValues()[0];
+    if (current[colIndex('PhotoEq')] === p.photo_url) {
+      current[colIndex('PhotoEq')] = '';
+      rowRange.setValues([current]);
+    }
+  }
+  return { ok: true, action: 'photo_deleted' };
+}
+
+function extractFileIdFromUrl(url) {
+  const m = String(url).match(/\/d\/([^/?]+)/);
+  return m ? m[1] : null;
 }
 
 /**
