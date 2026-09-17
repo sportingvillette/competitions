@@ -395,6 +395,24 @@ def parse_confirmed_date(date_str: str):
         return None, None
     return f"{int(day):02d}/{month:02d}/{year}", f"{int(hour):02d}:{minute}"
 
+def earliest_date_in_string(date_str: str):
+    """Extrait la 1ère date "DD mois AAAA" trouvée dans une chaîne FFHB, confirmée ou non
+    (ex. "samedi 19 septembre 2026 à 15H00" -> 19/09/2026 ; "19 septembre 2026 au 20 septembre
+    2026" -> 19/09/2026, la borne basse de la plage). Retourne un datetime.date ou None."""
+    if not date_str:
+        return None
+    m = re.search(r"(\d{1,2})\s+([A-Za-zÀ-ÿ]+)\s+(\d{4})", date_str)
+    if not m:
+        return None
+    day, month_name, year = m.groups()
+    month = FR_MONTHS.get(month_name.lower())
+    if not month:
+        return None
+    try:
+        return datetime.date(int(year), month, int(day))
+    except ValueError:
+        return None
+
 def extract_ffhb_id(lien: str) -> str:
     m = re.search(r"(rencontre-\d+)", lien or "")
     return m.group(1) if m else ""
@@ -690,6 +708,40 @@ def find_teams_without_match(full_mapping: pd.DataFrame, final_calendrier: pd.Da
     return missing
 
 
+def find_unconfirmed_matches_needing_attention(final_calendrier: pd.DataFrame, today: datetime.date, threshold_days: int = 7) -> list:
+    """2e sécurité demandée par Julien (2026-09-17), suite à 2 mappings cassés coup sur coup
+    (M15G Rés. puis Seniors F A, Entente Lyon Est Handball) : dans les 2 cas, l'équipe avait
+    déjà des lignes historiques dans calendrier_club.csv (scrapées avant que la FFHB ne change
+    son nom d'affichage), donc invisible pour find_teams_without_match ci-dessus — seul le
+    SYMPTÔME était visible : un match du week-end encore marqué non confirmé alors que la FFHB
+    avait bel et bien publié un horaire précis depuis plusieurs jours.
+
+    Julien : "il est impossible qu'un match ne soit pas à jour dans la semaine précédant la
+    rencontre, donc si on a un match à confirmer il faut s'inquiéter et chercher la cause" —
+    donc, indépendamment de toute logique de mapping, toute ligne encore `date_confirmee` !=
+    True dont la date estimée (borne basse de la plage FFHB) tombe à moins de `threshold_days`
+    jours d'aujourd'hui (passée OU à venir — un match déjà passé et toujours non confirmé est
+    au moins aussi suspect) est un signal à remonter tel quel, à charge pour Julien/nous de
+    creuser la cause (mapping cassé, format FFHB changé, ou simplement pas encore publié)."""
+    if final_calendrier is None or final_calendrier.empty:
+        return []
+    if "date_confirmee" not in final_calendrier.columns or "date/heure" not in final_calendrier.columns:
+        return []
+    confirmee = final_calendrier["date_confirmee"].fillna("").astype(str).str.strip().str.lower()
+    unconfirmed = final_calendrier[confirmee != "true"]
+    flagged = []
+    for _, row in unconfirmed.iterrows():
+        d = earliest_date_in_string(str(row.get("date/heure", "") or ""))
+        if d is None or (d - today).days > threshold_days:
+            continue
+        label = " ".join(
+            str(x) for x in [row.get("section", ""), row.get("indice", ""), row.get("categorie", "")]
+            if str(x) and str(x) != "nan"
+        )
+        flagged.append(f"{label} (journée {row.get('journée', '?')}, {row.get('date/heure', '')})")
+    return flagged
+
+
 def _merge_by_key(prev: pd.DataFrame, new: pd.DataFrame, key_cols: list, preserve_col: str = None) -> pd.DataFrame:
     """Remplace dans `prev` les lignes des équipes présentes dans `new` (par key_cols),
     garde le reste de `prev` intact, ajoute les lignes de `new`.
@@ -806,6 +858,7 @@ def run_club_scrape_ci(mapping_dir: str, outdir: str, teams_filter: str):
     calendrier_rows = []
     classement_rows = []
     refreshed_ids = []
+    refreshed_no_match_ids = []
     erreurs = []
 
     global _RUN_STARTED_AT
@@ -830,6 +883,12 @@ def run_club_scrape_ci(mapping_dir: str, outdir: str, teams_filter: str):
                 cal, cls = scrape_one_mapping_row(page, poule_cache, salle_cache, t, on_journee=on_journee, on_match=on_match)
                 if cal is not None:
                     calendrier_rows.append(cal)
+                else:
+                    # Équipe explicitement traitée ce run (pas un simple "hors périmètre du
+                    # --teams") mais 0 ligne récupérée — signal distinct de equipes_sans_match
+                    # (qui ne regarde que l'historique déjà connu, potentiellement périmé) : ce
+                    # run-ci vient d'essayer et n'a rien trouvé de frais, cf find_teams_without_match.
+                    refreshed_no_match_ids.append(t["id"])
                 if cls is not None:
                     classement_rows.append(cls)
                 refreshed_ids.append(t["id"])
@@ -855,6 +914,21 @@ def run_club_scrape_ci(mapping_dir: str, outdir: str, teams_filter: str):
             f"dans calendrier_club.csv (mapping probablement faux, cf CLAUDE.md 'club porteur') : "
             + ", ".join(equipes_sans_match)
         )
+    if refreshed_no_match_ids:
+        print(
+            f"\n⚠ {len(refreshed_no_match_ids)} équipe(s) rafraîchie(s) ce run mais 0 ligne fraîche "
+            f"récupérée (mapping probablement cassé depuis un run précédent, historique préservé "
+            f"mais périmé) : " + ", ".join(refreshed_no_match_ids)
+        )
+
+    matchs_a_verifier = find_unconfirmed_matches_needing_attention(
+        final_calendrier, datetime.datetime.now(datetime.timezone.utc).date()
+    )
+    if matchs_a_verifier:
+        print(
+            f"\n⚠ {len(matchs_a_verifier)} match(s) non confirmé(s) à moins de 7 jours "
+            f"(ou déjà passé(s)) — vérifier la cause : " + "; ".join(matchs_a_verifier)
+        )
 
     status = {
         "derniere_maj": datetime.datetime.now(datetime.timezone.utc).isoformat(),
@@ -862,21 +936,25 @@ def run_club_scrape_ci(mapping_dir: str, outdir: str, teams_filter: str):
         "equipes_rafraichies": refreshed_ids,
         "erreurs": erreurs,
         "equipes_sans_match": equipes_sans_match,
+        "equipes_rafraichies_sans_nouveau_match": refreshed_no_match_ids,
+        "matchs_a_verifier": matchs_a_verifier,
     }
     with open(os.path.join(outdir, "last_update.json"), "w", encoding="utf-8") as f:
         json.dump(status, f, ensure_ascii=False, indent=2)
     print(
         f"\n✔ last_update.json -> {len(refreshed_ids)} équipe(s) rafraîchie(s), {len(erreurs)} erreur(s), "
-        f"{len(equipes_sans_match)} équipe(s) sans match malgré un lien FFHB."
+        f"{len(equipes_sans_match)} équipe(s) sans match malgré un lien FFHB, "
+        f"{len(refreshed_no_match_ids)} équipe(s) rafraîchie(s) sans match frais, "
+        f"{len(matchs_a_verifier)} match(s) non confirmé(s) à vérifier."
     )
-    all_problems = erreurs + equipes_sans_match
+    all_problems = erreurs + equipes_sans_match + refreshed_no_match_ids + matchs_a_verifier
     post_progress(team_total, team_total, "", done=True, error=(", ".join(all_problems) if all_problems else None))
     if all_problems:
-        # Fait échouer le run (notification GitHub Actions) même si equipes_sans_match est seul
-        # en cause — une équipe avec lien FFHB et 0 match est presque toujours un mapping cassé
-        # (cf find_teams_without_match), pas une absence légitime : mérite d'être vu tout de
-        # suite plutôt que découvert par hasard des jours plus tard (vécu 2 fois, M18G B puis
-        # M18G D).
+        # Fait échouer le run (notification GitHub Actions) même si seule une des sécurités
+        # ci-dessus est en cause — presque toujours un mapping cassé (cf find_teams_without_match
+        # / find_unconfirmed_matches_needing_attention), pas une absence légitime : mérite d'être
+        # vu tout de suite plutôt que découvert par hasard des jours plus tard (vécu 4 fois :
+        # M18G B, M18G D, M15G Rés., Seniors F A — toujours le même piège "club porteur").
         sys.exit(1)
 
 def main():

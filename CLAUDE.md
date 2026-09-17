@@ -329,7 +329,9 @@ lit déjà le Google Sheet. Écrit aussi directement dans la sheet "Matchs"
   consolidées, une ligne par match/par classement avec colonnes
   `section/indice/categorie/phase` en tête. Lues par `index.html`.
 - `data/last_update.json` — `{ derniere_maj, mode, equipes_rafraichies,
-  erreurs }`, affiché dans l'UI.
+  erreurs, equipes_sans_match, equipes_rafraichies_sans_nouveau_match,
+  matchs_a_verifier }`, affiché dans l'UI. Les 3 derniers champs sont les
+  sécurités anti-mapping-cassé, voir section "club porteur" ci-dessous.
 - `.github/workflows/scrape-ffhb.yml` — cron (voir "Cron et fuseau horaire"
   ci-dessous) + `workflow_dispatch` (input `teams`, IDs séparés par
   virgules, vide = tout).
@@ -367,6 +369,36 @@ nouvelles (nouvelle équipe/phase apparue dans le sheet) et ne touche jamais
 aux lignes déjà présentes, même si leur score de confiance était bas. Une
 correction manuelle dans ce fichier (commit direct) est donc définitive tant
 qu'elle n'est pas explicitement changée à la main.
+
+Piège aggravant : la FFHB peut aussi **changer** ce nom d'affichage en cours
+de saison (constaté 4 fois : M18G B, M18G D, M15G Rés., Seniors F A — tantôt
+un changement de ponctuation type `- RESERVE` → `(RESERVE)`, tantôt le
+passage du club porteur au nom résolu de l'entente) — le mapping qui
+fonctionnait au début casse alors silencieusement, sans qu'aucune erreur ne
+remonte. 3 sécurités dans `scrape_ffhb_club.py`, toutes reflétées dans
+`data/last_update.json` et affichées dans l'UI (voir ci-dessus) :
+
+1. **`find_teams_without_match`** : toute équipe avec un `poule_url` doit
+   avoir au moins 1 ligne dans `calendrier_club.csv` (`equipes_sans_match`)
+   — détecte une équipe qui n'a **jamais** eu de match scrapé avec succès.
+2. **`refreshed_no_match_ids`** (dans `run_club_scrape_ci`,
+   `equipes_rafraichies_sans_nouveau_match` dans le JSON) : une équipe
+   explicitement rafraîchie ce run mais dont `scrape_one_mapping_row` n'a
+   trouvé aucune ligne fraîche — détecte le cas plus sournois où d'anciennes
+   lignes (scrapées avant que la FFHB change son nom d'affichage) restent
+   présentes et rendent le point 1 aveugle (vécu sur M15G Rés. et Seniors F A,
+   2026-09-17 : les 2 avaient des lignes historiques, invisibles pour
+   `find_teams_without_match`, mais 0 lien retrouvé sur ce run précis).
+3. **`find_unconfirmed_matches_needing_attention`** (`matchs_a_verifier`) :
+   symptôme plutôt que cause — toute ligne `date_confirmee` != `True` dont la
+   date estimée tombe à moins de 7 jours d'aujourd'hui (passée ou à venir).
+   Demande explicite de Julien (2026-09-17) : *"il est impossible qu'un
+   match ne soit pas à jour dans la semaine précédant la rencontre"* — donc
+   indépendant de toute logique de mapping, détecte n'importe quelle cause de
+   blocage (mapping cassé, format FFHB changé, ou autre chose d'imprévu).
+
+Les 3 sécurités font échouer le run (`sys.exit(1)`, notification GitHub
+Actions) dès qu'au moins une remonte quelque chose.
 
 ### Fusion sélective (`--teams`)
 

@@ -1969,6 +1969,12 @@ async function loadLastUpdate() {
     if (data.equipes_sans_match && data.equipes_sans_match.length) {
       msg += ' — ⚠️ ' + data.equipes_sans_match.length + ' équipe(s) avec un lien FFHB mais 0 match (mapping à vérifier) : ' + data.equipes_sans_match.join(', ');
     }
+    if (data.equipes_rafraichies_sans_nouveau_match && data.equipes_rafraichies_sans_nouveau_match.length) {
+      msg += ' — ⚠️ ' + data.equipes_rafraichies_sans_nouveau_match.length + ' équipe(s) rafraîchie(s) sans match frais (mapping probablement cassé) : ' + data.equipes_rafraichies_sans_nouveau_match.join(', ');
+    }
+    if (data.matchs_a_verifier && data.matchs_a_verifier.length) {
+      msg += ' — ⚠️ ' + data.matchs_a_verifier.length + ' match(s) non confirmé(s) à moins de 7 jours (ou déjà passé(s)) : ' + data.matchs_a_verifier.join(' ; ');
+    }
     el.textContent = msg;
   } catch (err) {
     el.textContent = 'Dernière mise à jour FFHB : inconnue.';
