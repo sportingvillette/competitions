@@ -397,8 +397,20 @@ remonte. 3 sécurités dans `scrape_ffhb_club.py`, toutes reflétées dans
    indépendant de toute logique de mapping, détecte n'importe quelle cause de
    blocage (mapping cassé, format FFHB changé, ou autre chose d'imprévu).
 
-Les 3 sécurités font échouer le run (`sys.exit(1)`, notification GitHub
-Actions) dès qu'au moins une remonte quelque chose.
+**Ne font plus échouer le run** (changé le 2026-09-18, suite à un run cassé le
+17/09 par une seule équipe qui a fait sauter le commit des 15 autres,
+pourtant valides) : un `sys.exit(1)` dans `scrape_ffhb_club.py` aurait fait
+échouer tout le job GitHub Actions et sauté les étapes suivantes (sync
+amicaux, instantané classement, **commit**) — donc perdu aussi les données
+d'équipes parfaitement valides scrapées la même nuit. `run_club_scrape_ci`
+retourne maintenant toujours 0 ; la notification passe par une étape dédiée
+dans `scrape-ffhb.yml` (`Notifier les anomalies détectées`, `if: always()`)
+qui lit `data/last_update.json` après le commit et ouvre/commente une issue
+GitHub (label `scraper-ffhb-alerte`) si `erreurs`/`equipes_sans_match`/
+`equipes_rafraichies_sans_nouveau_match`/`matchs_a_verifier` contiennent
+quelque chose — une seule issue vivante à la fois (commentée à chaque run
+tant qu'elle reste ouverte, jamais une nouvelle par nuit), refermée
+automatiquement dès qu'un run repasse propre.
 
 ### Fusion sélective (`--teams`)
 

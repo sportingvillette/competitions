@@ -263,65 +263,23 @@ visuel rapide : pas de chevauchement de texte visible, pages "pas de
 match" lisibles et bien centrées, dates et sous-titre cohérents partout.
 
 **Ne publie rien, ne partage rien, n'envoie rien** sur Instagram ou
-ailleurs — cette tâche s'arrête à la génération du visuel et à son dépôt
-sur Drive (Phase 7). Déposer un fichier sur le Drive personnel de Julien
-n'est pas une publication publique, c'est autorisé sans confirmation
-supplémentaire dans le cadre de cette tâche récurrente déjà validée par
-lui.
-
----
-
-## Phase 7 — Exporter en PNG et déposer sur Drive
-
-1. Exporte chaque page du design en PNG (`export-design`, `format.type:
-   "png"`, sans `pages` précisé pour exporter les 10 en une fois — vérifie
-   d'abord `get-export-formats` sur ce design si tu as un doute).
-2. Les URLs renvoyées sont **temporaires** (expirent en quelques heures) —
-   télécharge chaque fichier immédiatement plutôt que de te contenter de
-   garder les URLs de côté. **Si le téléchargement échoue** (ex. domaine
-   `export-download.canva.com` inaccessible depuis ton environnement) :
-   n'insiste pas, passe directement à l'étape 5 (échec à signaler), le
-   reste de la Phase 7 devient sans objet sans les fichiers en main.
-3. Une fois les 10 PNG en main localement, dépose-les un par un via le
-   script `deposit_drive_asset.py` (pas d'accès direct à Google Drive) :
-
-   ```
-   curl -s -o deposit_drive_asset.py https://raw.githubusercontent.com/sportingvillette/competitions/main/scripts/deposit_drive_asset.py
-   python3 deposit_drive_asset.py --kind weekend_post --subfolder "<weekend_label>" --file 01-couverture.png
-   python3 deposit_drive_asset.py --kind weekend_post --subfolder "<weekend_label>" --file 02-a-domicile.png
-   ... (une fois par fichier)
-   ```
-
-   Nomme chaque fichier local de façon à ce que Julien s'y retrouve
-   facilement depuis son téléphone, ex. `01-couverture.png`,
-   `02-a-domicile.png`, `03-m7-m9.png`, `04-m11.png`, `05-m13.png`,
-   `06-m15.png`, `07-m16-m17.png`, `08-m18.png`, `09-seniors.png`,
-   `10-loisirs.png` (numérotées dans l'ordre des pages). `<weekend_label>`
-   (ex. `"17 & 18 JAN."`) regroupe les 10 fichiers de ce run dans un même
-   sous-dossier de "Temp posts Instagram" — n'invente pas d'autre
-   emplacement, le script gère seul la création du sous-dossier.
-4. Chaque appel réussi renvoie un JSON `{"ok": true, "url": "...",
-   "fileId": "..."}` — garde ces 10 URLs pour le rapport final (lien direct
-   cliquable depuis le téléphone de Julien, pas besoin qu'il navigue dans
-   Drive).
-5. Si l'export, le téléchargement ou le dépôt échoue à un moment
-   quelconque, n'empêche pas le reste de la tâche d'avoir réussi —
-   signale clairement l'échec dans ton rapport final (verbatim l'erreur),
-   avec l'`edit_url` du design Canva en secours (Julien peut toujours
-   exporter lui-même depuis l'appli Canva).
+ailleurs, et n'exporte/ne dépose rien nulle part — cette tâche s'arrête
+à la génération du visuel dans Canva. Julien publie maintenant
+lui-même directement depuis l'app Canva vers Instagram (il n'utilise
+plus les dépôts Drive) : le design fini dans le dossier "Post hebdo
+planning matchs" (Phase 1) est le seul livrable attendu.
 
 ---
 
 ## Rapport final attendu
 
-- Le `edit_url` du design généré.
+- Le `edit_url` du design généré — c'est le seul lien dont Julien a
+  besoin pour retrouver et publier le post.
 - Le sous-titre rédigé en Phase 3 (texte exact utilisé).
 - La liste des pages remplies avec de vrais matchs vs celles passées en
   "Pas de match ce week-end" (et pourquoi).
 - Le contenu de `warnings` du JSON (Phase 0), s'il y en a.
 - Tout cas C rencontré (page trop petite pour le nombre de matchs).
-- Les 10 liens Drive renvoyés par `deposit_drive_asset.py` (ou l'échec
-  rencontré, verbatim, avec l'edit_url Canva en secours).
 - Toute erreur rencontrée à n'importe quelle étape, verbatim.
 
 Le design final a toujours 10 pages (aucune page n'est jamais supprimée).

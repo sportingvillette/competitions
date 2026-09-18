@@ -949,13 +949,16 @@ def run_club_scrape_ci(mapping_dir: str, outdir: str, teams_filter: str):
     )
     all_problems = erreurs + equipes_sans_match + refreshed_no_match_ids + matchs_a_verifier
     post_progress(team_total, team_total, "", done=True, error=(", ".join(all_problems) if all_problems else None))
-    if all_problems:
-        # Fait échouer le run (notification GitHub Actions) même si seule une des sécurités
-        # ci-dessus est en cause — presque toujours un mapping cassé (cf find_teams_without_match
-        # / find_unconfirmed_matches_needing_attention), pas une absence légitime : mérite d'être
-        # vu tout de suite plutôt que découvert par hasard des jours plus tard (vécu 4 fois :
-        # M18G B, M18G D, M15G Rés., Seniors F A — toujours le même piège "club porteur").
-        sys.exit(1)
+    # Ne fait PLUS échouer le run (pas de sys.exit(1)) : un exit non-zéro fait échouer tout le
+    # job GitHub Actions, ce qui saute les étapes suivantes (sync-amicaux, instantané classement,
+    # ET LE COMMIT) — donc les données d'équipes parfaitement valides scrapées la même nuit
+    # n'étaient jamais sauvegardées non plus, à cause d'UNE SEULE équipe cassée (vécu le
+    # 2026-09-18 : 15 équipes correctement rafraîchies perdues à cause d'1 seule en échec).
+    # Demande de Julien (2026-09-18) : ne jamais bloquer l'exécution, notifier autrement (voir
+    # l'étape dédiée dans scrape-ffhb.yml, qui ouvre/commente une issue GitHub à partir de
+    # last_update.json plutôt que de compter sur l'échec du job) — le statut détaillé reste dans
+    # last_update.json (et sur le site) exactement comme avant, `all_problems` toujours calculé
+    # ci-dessus pour l'affichage console/progress, juste plus utilisé pour arrêter le process.
 
 def main():
     if len(sys.argv) > 1:

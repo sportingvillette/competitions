@@ -29,6 +29,7 @@ on:
 
 permissions:
   contents: write
+  issues: write
 
 concurrency:
   group: scrape-ffhb
@@ -99,3 +100,84 @@ jobs:
             git commit -m "chore: mise à jour automatique FFHB ($(date -u +'%Y-%m-%d %H:%M UTC'))"
             git push origin HEAD:${{ github.ref_name }}
           fi
+
+      - name: Notifier les anomalies détectées (sans faire échouer le run)
+        # Le scraper (voir scrape_ffhb_club.py) n'échoue plus jamais volontairement sur ces
+        # signaux (equipes_sans_match / equipes_rafraichies_sans_nouveau_match /
+        # matchs_a_verifier / erreurs) : un exit non-zéro sautait les étapes suivantes,
+        # notamment le commit — une seule équipe cassée perdait alors les données fraîches de
+        # TOUTES les autres équipes du même run (vécu le 2026-09-18). Demande de Julien : ne
+        # jamais bloquer l'exécution, mais toujours pouvoir identifier et corriger le problème
+        # avant que la tâche hebdo (news/post Instagram) ne tourne sur des données cassées.
+        # Notification via une issue GitHub (créée une seule fois, puis commentée à chaque run
+        # tant qu'elle reste ouverte — pas une nouvelle issue par nuit) : Julien reçoit déjà un
+        # e-mail GitHub à chaque commentaire/création d'issue sur ses repos, même mécanisme que
+        # celui qui l'a alerté de l'échec du run du 2026-09-18, mais qui ne bloque plus rien.
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import subprocess
+
+          LABEL = "scraper-ffhb-alerte"
+          TITLE = "Anomalies scraper FFHB à vérifier"
+
+          if not os.path.exists("data/last_update.json"):
+              print("Pas de last_update.json (le scraper a probablement crashé avant de l'écrire) — rien à faire ici.")
+              raise SystemExit(0)
+
+          with open("data/last_update.json", encoding="utf-8") as f:
+              status = json.load(f)
+
+          sections = [
+              ("Erreurs de scraping (exception Python)", status.get("erreurs") or []),
+              ("Équipes avec un lien FFHB mais 0 match jamais récupéré", status.get("equipes_sans_match") or []),
+              ("Équipes rafraîchies ce run mais 0 match frais (mapping probablement cassé)", status.get("equipes_rafraichies_sans_nouveau_match") or []),
+              ("Matchs non confirmés à moins de 7 jours (ou déjà passés)", status.get("matchs_a_verifier") or []),
+          ]
+          problems = [(title, items) for title, items in sections if items]
+
+          subprocess.run(
+              ["gh", "label", "create", LABEL, "--color", "d73a4a",
+               "--description", "Anomalie détectée par le scraper FFHB"],
+              capture_output=True,
+          )  # ignore l'erreur si le label existe déjà (pas de --force pour ne pas écraser une éventuelle édition manuelle)
+
+          existing = subprocess.run(
+              ["gh", "issue", "list", "--label", LABEL, "--state", "open", "--json", "number", "--jq", ".[0].number"],
+              capture_output=True, text=True, check=True,
+          ).stdout.strip()
+
+          if not problems:
+              if existing:
+                  subprocess.run(
+                      ["gh", "issue", "close", existing, "--comment",
+                       "Plus aucune anomalie détectée sur le dernier run — fermeture automatique."],
+                      check=True,
+                  )
+                  print(f"Issue #{existing} refermée (anomalies résolues).")
+              else:
+                  print("Aucune anomalie, rien à signaler.")
+              raise SystemExit(0)
+
+          lines = [f"Détecté le {status.get('derniere_maj', '?')} (run {status.get('mode', '?')})." , ""]
+          for title, items in problems:
+              lines.append(f"**{title}** ({len(items)}) :")
+              lines.extend(f"- {item}" for item in items)
+              lines.append("")
+          lines.append('Voir CLAUDE.md (section "club porteur") pour la marche à suivre habituelle.')
+          body = "\n".join(lines)
+
+          if existing:
+              subprocess.run(["gh", "issue", "comment", existing, "--body", body], check=True)
+              print(f"Commentaire ajouté sur l'issue #{existing}.")
+          else:
+              subprocess.run(
+                  ["gh", "issue", "create", "--title", TITLE, "--label", LABEL, "--body", body],
+                  check=True,
+              )
+              print("Nouvelle issue créée.")
+          PY
