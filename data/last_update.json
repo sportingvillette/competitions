@@ -1,9 +1,11 @@
 {
-  "derniere_maj": "2026-09-17T21:23:04.313624+00:00",
+  "derniere_maj": "2026-09-18T05:47:50.532266+00:00",
   "mode": "partiel",
   "equipes_rafraichies": [
-    "Entente_Lyon_Est_Handball_F_A_Seniors_P1"
+    "Entente_Est_Lyonnais_G_A_M18_P1"
   ],
   "erreurs": [],
-  "equipes_sans_match": []
+  "equipes_sans_match": [],
+  "equipes_rafraichies_sans_nouveau_match": [],
+  "matchs_a_verifier": []
 }
