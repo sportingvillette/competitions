@@ -16,15 +16,21 @@ def strip_postal_code(ville: str) -> str:
     """Retire un code postal français en préfixe (ex. '69740 GENAS' -> 'GENAS')."""
     return re.sub(r"^\d{5}\s+", "", ville or "").strip()
 
-def sentence_case(s: str) -> str:
-    """Majuscule initiale seulement (reste en minuscules), y compris après un tiret ou une
-    apostrophe (ex. 'HALLE DES SPORTS' -> 'Halle des sports', "VILLETTE D'ANTHON" ->
-    "Villette d'Anthon", 'SAINT-PRIEST' -> 'Saint-Priest'). Utilisé pour gymnase/ville, dont
-    FFHB affiche le nom tout en majuscules."""
-    s = (s or "").strip().lower()
-    if not s:
-        return s
-    return re.sub(r"(^|[-'’])(\w)", lambda m: m.group(1) + m.group(2).upper(), s)
+# NOTE : duplique volontairement GENRE_SUFFIX_RE/pretty_section (scripts/build_weekend_payload.py)
+# et GENRE_SUFFIX_RE/stripGenreSuffix (index.html JS) — même règle, 3 endroits, à répercuter
+# partout en cas de correctif (même convention de duplication que strip_category_prefix ci-dessous).
+_GENRE_SUFFIX_RE = re.compile(r"\s*\([FG]\)\s*$", re.IGNORECASE)
+
+def strip_genre_suffix(section: str) -> str:
+    """Retire le suffixe genre '(F)'/'(G)' d'un nom de section (ex. 'Entente Lyon Est Handball
+    (F)' -> 'Entente Lyon Est Handball'). La colonne "Section" du Google Sheet équipes le garde
+    légitimement (2 sous-sections filles/garçons distinctes) — mais team_mapping.csv (comme
+    calendrier_club.csv/classements_club.csv) utilise partout le nom SANS suffixe comme clé de
+    rapprochement (voir PR "Suffixe genre (F)/(G) retiré des sections", 2026-09-02). Bug trouvé
+    le 2026-09-27 : resolve_new_teams()/load_sheet_teams() copiaient la colonne Section brute
+    (avec suffixe) dans les nouvelles lignes team_mapping.csv, cassant keyMatch() côté index.html
+    contre calendrier_club.csv/classements_club.csv (déjà écrits sans suffixe)."""
+    return _GENRE_SUFFIX_RE.sub("", section or "").strip()
 
 # NOTE : `strip_category_prefix` duplique volontairement la logique JS
 # `stripCategoryPrefix` d'index.html (et sa version Python dans
@@ -69,9 +75,11 @@ def title_case_fr(name: str) -> str:
     de liaison (de/du/des/la/le/les/et/en) en minuscules sauf en tout début
     de chaîne, article élidé (d'/l'/qu'...) en minuscules avec majuscule
     juste après l'apostrophe (ex. "L'ISERE" -> "l'Isere"), sigles connus
-    (_KNOWN_ACRONYMS) inchangés. Contrairement à `sentence_case` (une seule
-    majuscule, adapté aux noms de lieux), un nom de club a besoin d'une
-    majuscule par mot."""
+    (_KNOWN_ACRONYMS) inchangés. Réutilisé aussi pour gymnase/ville (ex.
+    "GYMNASE CONDORCET" -> "Gymnase Condorcet", "ST PRIEST" -> "St Priest") : l'ancienne
+    fonction dédiée `sentence_case` (une seule majuscule en tête, ex. "Gymnase condorcet")
+    ne mettait pas assez de majuscules selon Julien (2026-09-27) — retirée au profit de
+    celle-ci."""
     name = (name or "").strip()
     if not name:
         return name
@@ -184,9 +192,9 @@ def extract_salle(soup: BeautifulSoup) -> dict:
         return {"gymnase": "", "ville": "", "adresse_complete": ""}
     spans = address_div.find_all("span")
     texts = [clean_text(s.get_text(" ")) for s in spans]
-    gymnase = sentence_case(texts[0]) if len(texts) > 0 else ""
+    gymnase = title_case_fr(texts[0]) if len(texts) > 0 else ""
     rue = texts[1] if len(texts) > 1 else ""
-    ville = sentence_case(strip_postal_code(texts[2])) if len(texts) > 2 else ""
+    ville = title_case_fr(strip_postal_code(texts[2])) if len(texts) > 2 else ""
     adresse_complete = ", ".join(t for t in [gymnase, rue, ville] if t)
     return {"gymnase": gymnase, "ville": ville, "adresse_complete": adresse_complete}
 
@@ -222,11 +230,13 @@ def load_salle_cache(outdir: str, team_filter: str) -> dict:
         gymnase = str(row.get("gymnase", "") or "").strip()
         lien = str(row.get("lien", "") or "").strip()
         if lien and score and gymnase:
-            # Réapplique la mise en forme (sentence case + retrait code postal) sur les
+            # Réapplique la mise en forme (casse de titre + retrait code postal) sur les
             # valeurs relues du cache : les rattrape automatiquement au run suivant si elles
-            # avaient été scrapées avant l'ajout de ce nettoyage, sans script de migration à part.
-            gymnase = sentence_case(gymnase)
-            ville = sentence_case(strip_postal_code(str(row.get("ville", "") or "")))
+            # avaient été scrapées avant l'ajout/la correction de ce nettoyage, sans script de
+            # migration à part (même mécanisme qui a permis de corriger tout l'historique quand
+            # sentence_case -> title_case_fr, 2026-09-27).
+            gymnase = title_case_fr(gymnase)
+            ville = title_case_fr(strip_postal_code(str(row.get("ville", "") or "")))
             cache[lien] = {
                 "gymnase": gymnase,
                 "ville": ville,

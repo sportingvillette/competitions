@@ -1273,6 +1273,25 @@ function cleanOpponentLabel(raw) {
   return index ? `${base} - ${index}` : base;
 }
 
+// Normalisation avant comparaison "est-ce nous ?" entre le nom déjà nettoyé de
+// calendrier_club.csv (domicile/extérieur) et le nom resté brut de team_mapping.csv
+// (equipe_ffhb_proposee). Deux écarts trouvés le 2026-09-27 sur les nouvelles équipes
+// départementales (auto-rapprochées par le scraper, jamais vues avant sur les poules
+// régionales/excellence) :
+// 1. Un code catégorie (ex. "M11G", "U18F") apparaît parfois EN PLEIN MILIEU du nom FFHB brut
+//    (ex. "SPORTING VILLETTE M11G INT" = club + code + niveau), jamais en tête/suffixe comme
+//    les cas déjà gérés côté Python (_CATEGORY_CODE_RE dans scrape_ffhb.py) — retiré ici aussi
+//    (mot par mot), sinon il casse la contiguïté d'un `includes()` même bidirectionnel.
+// 2. Le suffixe d'indice d'équipe est tantôt séparé par " - " tantôt par un simple espace côté
+//    FFHB brut (ex. "ENTENTE GENAS-VILLETTE B" sans tiret devant le B, alors que le nettoyage
+//    de calendrier_club.csv le reformate toujours "... - B") — tirets/apostrophes normalisés en
+//    espace des deux côtés pour absorber cet écart de ponctuation.
+const _CATEGORY_CODE_WORD_RE = /^\(?[UM]\d{1,2}[FGM]?\)?$/i;
+function normalizeForMatch(s) {
+  const flat = (s || '').toUpperCase().replace(/[-'’.]/g, ' ').replace(/\s+/g, ' ').trim();
+  return flat.split(' ').filter(w => w && !_CATEGORY_CODE_WORD_RE.test(w)).join(' ');
+}
+
 // Compare le nom domicile/extérieur d'un match (déjà nettoyé par scrape_ffhb_club.py avant
 // écriture dans calendrier_club.csv, cf CLAUDE.md) au nom "equipe_ffhb_proposee" de
 // team_mapping.csv (resté brut, ex. "M13F EXC - ENTENTE LYON EST HANDBALL - 1" ou avec un
@@ -1280,8 +1299,8 @@ function cleanOpponentLabel(raw) {
 // unique échoue dans les deux sens selon le cas ; bidirectionnel comme `findPosInPoule`
 // ci-dessus, qui a le même problème et le résout déjà comme ça.
 function matchesUs(fieldValue, usName) {
-  const a = (fieldValue || '').toUpperCase().trim();
-  const b = (usName || '').toUpperCase().trim();
+  const a = normalizeForMatch(fieldValue);
+  const b = normalizeForMatch(usName);
   if (!a || !b) return false;
   return a.includes(b) || b.includes(a);
 }
@@ -1655,14 +1674,30 @@ async function attachClassementLabels(rows) {
     const ref = mappingRows.find(m => keyMatch(r, m));
     const domicile = r['domicile'] || '';
     const exterieur = r['extérieur'] || '';
-    const usIsDomicile = ref ? matchesUs(domicile, ref['equipe_ffhb_proposee']) : null;
+    // Teste les DEUX côtés plutôt que "domicile ne matche pas => on suppose extérieur" (bug
+    // trouvé le 2026-09-27, signalé par Julien sur les nouvelles équipes départementales
+    // fraîchement rapprochées par le scraper : quand `equipe_ffhb_proposee` est encore
+    // approximatif ou ne matche aucun des deux côtés, l'ancienne version affichait quand même
+    // "DOM"/"EXT" et un adversaire au hasard au lieu de reconnaître l'ambiguïté — l'utilisateur
+    // voyait alors le match complet en repli côté renderFFHBTable). Même pattern que déjà
+    // utilisé par resultBadge() plus haut dans ce fichier, jamais repris ici jusqu'ici.
+    const domMatch = ref ? matchesUs(domicile, ref['equipe_ffhb_proposee']) : false;
+    const extMatch = ref ? matchesUs(exterieur, ref['equipe_ffhb_proposee']) : false;
+    let usIsDomicile = null;
+    if (domMatch && !extMatch) usIsDomicile = true;
+    else if (extMatch && !domMatch) usIsDomicile = false;
     const opponentRaw = usIsDomicile === null ? '' : (usIsDomicile ? exterieur : domicile);
 
     const poule = clRows
       .filter(c => keyMatch(c, r))
       .sort((a, b) => (parseInt(a['Pos.'], 10) || 0) - (parseInt(b['Pos.'], 10) || 0));
-    const posDom = findPosInPoule(poule, domicile);
-    const posExt = findPosInPoule(poule, exterieur);
+    // Poule pas encore commencée (tout le monde à 0 point) : les positions "Pos." scrapées sont
+    // arbitraires (pas encore de vrai classement) — même règle que poulePos()/classementCell()/
+    // classementSuffix() ci-dessus, qui l'appliquaient déjà mais pas cette fonction-ci (bug
+    // trouvé le 2026-09-27 : "6e vs 2e" affiché sur une poule où personne n'a encore joué).
+    const pouleStarted = poule.length > 0 && poule.some(c => parseInt(c['Points'], 10) > 0);
+    const posDom = pouleStarted ? findPosInPoule(poule, domicile) : null;
+    const posExt = pouleStarted ? findPosInPoule(poule, exterieur) : null;
 
     let domext = '';
     if (usIsDomicile !== null) {

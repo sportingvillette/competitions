@@ -311,7 +311,7 @@ lit déjà le Google Sheet. Écrit aussi directement dans la sheet "Matchs"
 - `scraper/scrape_ffhb.py` — briques de scraping réutilisables (Playwright +
   BeautifulSoup) : parcours des journées d'une poule FFHB, extraction
   calendrier/scores/classement, extraction gymnase/ville sur la page de
-  détail d'un match (`extract_salle`, `sentence_case`, `strip_postal_code`,
+  détail d'un match (`extract_salle`, `title_case_fr`, `strip_postal_code`,
   voir ci-dessous). Utilisable aussi en CLI interactif en local
   (`python scrape_ffhb.py`) indépendamment du club — mono-poule/mono-équipe.
 - `scraper/scrape_ffhb_club.py` — orchestrateur multi-équipes club. Deux
@@ -336,24 +336,28 @@ lit déjà le Google Sheet. Écrit aussi directement dans la sheet "Matchs"
   ci-dessous) + `workflow_dispatch` (input `teams`, IDs séparés par
   virgules, vide = tout).
 
-### Nettoyage Gymnase/Ville (sentence case + retrait code postal)
+### Nettoyage Gymnase/Ville (casse de titre + retrait code postal)
 
 FFHB affiche ces deux champs tout en majuscules, avec le code postal en
 préfixe pour la ville (ex. `"69740 GENAS"`, `"HALLE DES SPORTS"`). Deux
 fonctions dans `scrape_ffhb.py` :
 - `strip_postal_code(ville)` — retire un `"NNNNN "` en préfixe.
-- `sentence_case(s)` — majuscule initiale seulement (reste en minuscules),
-  y compris après un tiret ou une apostrophe (ex. `"VILLETTE D'ANTHON"` →
-  `"Villette d'Anthon"`, `"SAINT-PRIEST"` → `"Saint-Priest"`) — heuristique
-  best-effort sur les libellés observés, peut nécessiter un ajustement sur
-  un cas non encore vu.
+- `title_case_fr(s)` — casse de titre par mot (voir plus bas, "Nettoyage de
+  nom/casse côté scraper"). **Avant le 2026-09-27**, gymnase/ville
+  utilisaient une fonction dédiée `sentence_case` (une seule majuscule en
+  tête, ex. `"HALLE DES SPORTS"` → `"Halle des sports"`) — jugée pas assez
+  fine par Julien (`"Gymnase condorcet"`, `"St priest"`, restait en
+  minuscules à partir du 2e mot) : remplacée par `title_case_fr` (déjà
+  utilisée pour les noms de club/adversaire), qui met une majuscule à
+  chaque mot significatif → `"Gymnase Condorcet"`, `"St Priest"`.
+  `sentence_case` supprimée (plus aucun appelant).
 
 Appliqué à la fois à l'extraction fraîche (`extract_salle`) et à la
 relecture du **cache** (`load_salle_cache` / `load_club_salle_cache`, qui
 réutilisent gymnase/ville des matchs déjà joués sans re-scraper leur page
-détail, cf ci-dessous) — les valeurs déjà scrapées avant l'ajout de ce
-nettoyage se corrigent donc automatiquement au run suivant, sans script de
-migration à part.
+détail, cf ci-dessous) — les valeurs déjà scrapées avant l'ajout/la
+correction de ce nettoyage se corrigent donc automatiquement au run
+suivant, sans script de migration à part.
 
 ### Piège important : le "club porteur" d'une entente
 

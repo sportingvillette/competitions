@@ -33,8 +33,8 @@ from scrape_ffhb import (
     scrape_poule_journees,
     normalize_poule_base_url,
     enrich_salle,
-    sentence_case,
     strip_postal_code,
+    strip_genre_suffix,
     strip_category_prefix,
     title_case_fr,
     save_if,
@@ -84,7 +84,11 @@ def load_sheet_teams() -> pd.DataFrame:
     df.columns = [c.strip() for c in df.columns]
     rows = []
     for _, r in df.iterrows():
-        section = clean_text(str(r.get("Section", "") or ""))
+        # strip_genre_suffix : la colonne Section du Sheet garde légitimement "(F)"/"(G)"
+        # (2 sous-sections filles/garçons distinctes), mais team_mapping.csv utilise partout le
+        # nom SANS suffixe comme clé de rapprochement — voir sa docstring pour le bug que ça a
+        # causé (2026-09-27) quand ce n'était pas encore fait ici.
+        section = strip_genre_suffix(clean_text(str(r.get("Section", "") or "")))
         if not section:
             continue
         indice = clean_text(str(r.get("Indice équipe", "") or "")) if pd.notna(r.get("Indice équipe")) else ""
@@ -223,11 +227,13 @@ def load_club_salle_cache(outdir: str) -> dict:
         gymnase = str(row.get("gymnase", "") or "").strip()
         lien = str(row.get("lien", "") or "").strip()
         if lien and score and gymnase:
-            # Réapplique la mise en forme (sentence case + retrait code postal) sur les
+            # Réapplique la mise en forme (casse de titre + retrait code postal) sur les
             # valeurs relues du cache : les rattrape automatiquement au run suivant si elles
-            # avaient été scrapées avant l'ajout de ce nettoyage, sans script de migration à part.
-            gymnase = sentence_case(gymnase)
-            ville = sentence_case(strip_postal_code(str(row.get("ville", "") or "")))
+            # avaient été scrapées avant l'ajout/la correction de ce nettoyage, sans script de
+            # migration à part (même mécanisme qui a permis de corriger tout l'historique quand
+            # sentence_case -> title_case_fr, 2026-09-27).
+            gymnase = title_case_fr(gymnase)
+            ville = title_case_fr(strip_postal_code(str(row.get("ville", "") or "")))
             cache[lien] = {
                 "gymnase": gymnase,
                 "ville": ville,
