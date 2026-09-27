@@ -96,12 +96,12 @@ Entente Est Lyonnais,B,M18,P1,3,M18M EXC - ENTENTE NORD BEAUJOLAIS 1,4
 Entente Est Lyonnais,B,M18,P1,4,M18M EXC - ENTENTE LIMAS/VHB,4
 Entente Est Lyonnais,B,M18,P1,5,CIVRIEUX HANDBALL CLUB,2
 Entente Est Lyonnais,B,M18,P1,6,Trévoux - U18 Excellence,2
-Entente Lyon Est Handball (F),A,M11,P1,1,HANDBALL CLUB DE LYON,0
-Entente Lyon Est Handball (F),A,M11,P1,2,HANDBALL GLEIZE SAINT JULIEN DENICE,0
-Entente Lyon Est Handball (F),A,M11,P1,3,MERMOZ F11A,0
-Entente Lyon Est Handball (F),A,M11,P1,4,UODL HANDBALL,0
-Entente Lyon Est Handball (F),A,M11,P1,5,HANDBALL CLUB DE CHAPONNAY,0
-Entente Lyon Est Handball (F),A,M11,P1,6,11F1 ENTENTE LYON EST HANDBALL,0
+Entente Lyon Est Handball,A,M11,P1,1,HANDBALL CLUB DE LYON,0
+Entente Lyon Est Handball,A,M11,P1,2,HANDBALL GLEIZE SAINT JULIEN DENICE,0
+Entente Lyon Est Handball,A,M11,P1,3,MERMOZ F11A,0
+Entente Lyon Est Handball,A,M11,P1,4,UODL HANDBALL,0
+Entente Lyon Est Handball,A,M11,P1,5,HANDBALL CLUB DE CHAPONNAY,0
+Entente Lyon Est Handball,A,M11,P1,6,11F1 ENTENTE LYON EST HANDBALL,0
 Sporting Villette,A,M11,P1,1,ES GENAS AZIEU HB 1,0
 Sporting Villette,A,M11,P1,2,-11G2 US MEYZIEU HANDBALL,0
 Sporting Villette,A,M11,P1,3,ST PRIEST HANDBALL INTERMEDIAIRE,0
@@ -116,20 +116,20 @@ Sporting Villette,B,M11,P1,4,ST PRIEST HANDBALL,0
 Sporting Villette,B,M11,P1,5,VENISSIEUX HANDBALL,0
 Sporting Villette,B,M11,P1,6,SPORTING VILLETTE M11G DEC,0
 Sporting Villette,B,M11,P1,7,DECINES HANDBALL CLUB,0
-Entente Lyon Est Handball (F),B,M13,P1,1,ASUL VAULX-EN-VELIN,0
-Entente Lyon Est Handball (F),B,M13,P1,2,HB GLEIZE ST JULIEN DENICE U13F B,0
-Entente Lyon Est Handball (F),B,M13,P1,3,BRON HANDBALL,0
-Entente Lyon Est Handball (F),B,M13,P1,4,CIVRIEUX HANDBALL CLUB,0
-Entente Lyon Est Handball (F),B,M13,P1,5,M13F DIV - UNION DES LIONNES,0
-Entente Lyon Est Handball (F),B,M13,P1,6,M13F DIV - ENTENTE LYON EST HANDBALL - 2,0
-Entente Lyon Est Handball (F),B,M13,P1,7,M13F DIV - ENTENTE NORD BEAUJOLAIS,0
-Entente Lyon Est Handball (F),C,M13,P1,1,MERMOZ F13,0
-Entente Lyon Est Handball (F),C,M13,P1,2,ISLE D'ABEAU SPORTS HANDBALL U13F,0
-Entente Lyon Est Handball (F),C,M13,P1,3,M13F DIV - ENTENTE LYON EST HANDBALL (3),0
-Entente Lyon Est Handball (F),C,M13,P1,4,MARCY L ETOILE HB,0
-Entente Lyon Est Handball (F),C,M13,P1,5,MORNANT HBC,0
-Entente Lyon Est Handball (F),C,M13,P1,6,M13 FEM ST FONS,0
-Entente Lyon Est Handball (F),C,M13,P1,7,VENISSIEUX HANDBALL,0
+Entente Lyon Est Handball,B,M13,P1,1,ASUL VAULX-EN-VELIN,0
+Entente Lyon Est Handball,B,M13,P1,2,HB GLEIZE ST JULIEN DENICE U13F B,0
+Entente Lyon Est Handball,B,M13,P1,3,BRON HANDBALL,0
+Entente Lyon Est Handball,B,M13,P1,4,CIVRIEUX HANDBALL CLUB,0
+Entente Lyon Est Handball,B,M13,P1,5,M13F DIV - UNION DES LIONNES,0
+Entente Lyon Est Handball,B,M13,P1,6,M13F DIV - ENTENTE LYON EST HANDBALL - 2,0
+Entente Lyon Est Handball,B,M13,P1,7,M13F DIV - ENTENTE NORD BEAUJOLAIS,0
+Entente Lyon Est Handball,C,M13,P1,1,MERMOZ F13,0
+Entente Lyon Est Handball,C,M13,P1,2,ISLE D'ABEAU SPORTS HANDBALL U13F,0
+Entente Lyon Est Handball,C,M13,P1,3,M13F DIV - ENTENTE LYON EST HANDBALL (3),0
+Entente Lyon Est Handball,C,M13,P1,4,MARCY L ETOILE HB,0
+Entente Lyon Est Handball,C,M13,P1,5,MORNANT HBC,0
+Entente Lyon Est Handball,C,M13,P1,6,M13 FEM ST FONS,0
+Entente Lyon Est Handball,C,M13,P1,7,VENISSIEUX HANDBALL,0
 Entente Villette Genas,B,M13,P1,1,UODL HANDBALL 2,0
 Entente Villette Genas,B,M13,P1,2,M13M DIV RTE - ENTENTE GENAS - VILLETTE 2,0
 Entente Villette Genas,B,M13,P1,3,LYON HANDBALL M13M DIVISION,0
@@ -145,15 +145,15 @@ Entente Villette Genas,C,M13,P1,5,MIONS HANDBALL,0
 Entente Villette Genas,C,M13,P1,6,VAULX EN VELIN HANDBALL CLUB,0
 Entente Villette Genas,C,M13,P1,7,M13M DIV - RTE ENTENTE GENAS-VILLETTE 3,0
 Entente Villette Genas,C,M13,P1,8,HBC CREMIEU -13G,0
-Entente Lyon Est Handball (F),B,M15,P1,1,CALUIRE-RILLIEUX HANDBALL,0
-Entente Lyon Est Handball (F),B,M15,P1,2,CIVRIEUX HANDBALL CLUB,0
-Entente Lyon Est Handball (F),B,M15,P1,3,M15F DIV - ENTENTE LYON EST HANDBALL (2),0
-Entente Lyon Est Handball (F),B,M15,P1,4,M15 FEM ST FONS,0
-Entente Lyon Est Handball (F),B,M15,P1,5,CHAPONNAY,0
-Entente Lyon Est Handball (F),B,M15,P1,6,COTIERE HANDBALL,0
-Entente Lyon Est Handball (F),B,M15,P1,7,AMPLEPUIS HAC,0
-Entente Lyon Est Handball (F),B,M15,P1,8,HBC CREMIEU -15F,0
-Entente Lyon Est Handball (F),B,M15,P1,9,QUINCIEUX HANDBALL,0
+Entente Lyon Est Handball,B,M15,P1,1,CALUIRE-RILLIEUX HANDBALL,0
+Entente Lyon Est Handball,B,M15,P1,2,CIVRIEUX HANDBALL CLUB,0
+Entente Lyon Est Handball,B,M15,P1,3,M15F DIV - ENTENTE LYON EST HANDBALL (2),0
+Entente Lyon Est Handball,B,M15,P1,4,M15 FEM ST FONS,0
+Entente Lyon Est Handball,B,M15,P1,5,CHAPONNAY,0
+Entente Lyon Est Handball,B,M15,P1,6,COTIERE HANDBALL,0
+Entente Lyon Est Handball,B,M15,P1,7,AMPLEPUIS HAC,0
+Entente Lyon Est Handball,B,M15,P1,8,HBC CREMIEU -15F,0
+Entente Lyon Est Handball,B,M15,P1,9,QUINCIEUX HANDBALL,0
 Entente Villette Genas,D,M15,P1,1,CALUIRE-RILLIEUX HANDBALL 2,0
 Entente Villette Genas,D,M15,P1,2,UODL HANDBALL 2,0
 Entente Villette Genas,D,M15,P1,3,ST GENIS LAVAL AL HANDBALL -15M DIV 1,0
@@ -173,14 +173,14 @@ Entente Villette Genas,F,M15,P1,1,ST GENIS LAVAL AL HANDBALL 3,0
 Entente Villette Genas,F,M15,P1,2,MORNANT HBC,0
 Entente Villette Genas,F,M15,P1,3,M15M DIV - RTE ENTENTE GENAS VILLETTE 3,0
 Entente Villette Genas,F,M15,P1,4,M15M DIV - ENTENTE NORD BEAUJOLAIS 2,0
-Entente Lyon Est Handball (F),B,M18,P1,1,ST GENIS LAVAL AL HANDBALL 2,0
-Entente Lyon Est Handball (F),B,M18,P1,2,M18F DIV - ENTENTE BRON-VAULX EN VELIN-VILLEURBANNE LYON METROPOLE,0
-Entente Lyon Est Handball (F),B,M18,P1,3,Civrieux Handball Club,0
-Entente Lyon Est Handball (F),B,M18,P1,4,AMBERIEU HBC,0
-Entente Lyon Est Handball (F),B,M18,P1,5,MARCY L ETOILE HB,0
-Entente Lyon Est Handball (F),B,M18,P1,6,M18F DIV - ENTENTE LYON EST HANDBALL - 2,0
-Entente Lyon Est Handball (F),B,M18,P1,7,M18F DIV - UNION DES LIONNES,0
-Entente Lyon Est Handball (F),B,M18,P1,8,REVERMONT HANDBALL CLUB,0
+Entente Lyon Est Handball,B,M18,P1,1,ST GENIS LAVAL AL HANDBALL 2,0
+Entente Lyon Est Handball,B,M18,P1,2,M18F DIV - ENTENTE BRON-VAULX EN VELIN-VILLEURBANNE LYON METROPOLE,0
+Entente Lyon Est Handball,B,M18,P1,3,Civrieux Handball Club,0
+Entente Lyon Est Handball,B,M18,P1,4,AMBERIEU HBC,0
+Entente Lyon Est Handball,B,M18,P1,5,MARCY L ETOILE HB,0
+Entente Lyon Est Handball,B,M18,P1,6,M18F DIV - ENTENTE LYON EST HANDBALL - 2,0
+Entente Lyon Est Handball,B,M18,P1,7,M18F DIV - UNION DES LIONNES,0
+Entente Lyon Est Handball,B,M18,P1,8,REVERMONT HANDBALL CLUB,0
 Sporting Villette,A,Seniors,P1,1,MERMOZ SM4,0
 Sporting Villette,A,Seniors,P1,2,ES GENAS AZIEU HANDBALL,0
 Sporting Villette,A,Seniors,P1,3,ISLE D'ABEAU SENIORS GARCONS 2,0
