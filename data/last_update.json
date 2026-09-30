@@ -1,5 +1,5 @@
 {
-  "derniere_maj": "2026-09-29T04:07:48.702479+00:00",
+  "derniere_maj": "2026-09-30T02:53:18.836293+00:00",
   "mode": "complet",
   "equipes_rafraichies": [
     "Entente_Lyon_Est_Handball_F_M16_P1",
@@ -50,7 +50,5 @@
   "erreurs": [],
   "equipes_sans_match": [],
   "equipes_rafraichies_sans_nouveau_match": [],
-  "matchs_a_verifier": [
-    "Sporting Villette A M11 (journée 1, 3 octobre 2026 au 4 octobre 2026)"
-  ]
+  "matchs_a_verifier": []
 }
