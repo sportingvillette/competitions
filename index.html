@@ -1531,16 +1531,30 @@ function renderWeekendTeamBlocks(rows) {
     // style — même raison que align="center" sur <table> ailleurs dans ce fichier : survit au
     // filtrage de l'éditeur SportsRégions, contrairement à du CSS inline. Les photos (souvent
     // des photos de téléphone à pleine résolution) s'affichaient énormes — largeur fixe 480px
-    // d'abord (2026-08-31), réduite à 200px sur demande de Julien (2026-09-XX) ; width="200" en
-    // attribut couvre déjà le cas courant (photo plus large que haute), max-height en style est
-    // gardé en complément pour une photo au format portrait, au cas où le style survit au filtre.
-    const photoPart = photo ? `<p align="center"><img src="${photo}" alt="${label}" width="200" style="max-width:200px;max-height:200px;"></p>` : '';
+    // d'abord (2026-08-31), réduite à 200px (2026-09-XX), puis 400px (Julien, 2026-10-04 : 200
+    // trop petit une fois la photo placée à côté du commentaire). width="400" en attribut
+    // seulement : pas de max-height en style (avec une width fixe il déformerait une photo
+    // portrait au lieu de la réduire proportionnellement).
     const comment = (r['Commentaire'] || '').trim();
-    const commentPart = comment ? `<p><i>« ${comment} »</i></p>` : '';
+    const img = photo ? `<img src="${photo}" alt="${label}" width="400" style="max-width:400px;">` : '';
+    const commentHtml = comment ? `<i>« ${comment} »</i>` : '';
+    // Photo + commentaire : tableau 2 colonnes (photo à gauche, commentaire à droite, centrés
+    // verticalement) pour un bloc plus compact — demande de Julien, 2026-10-04. Mise en page
+    // via attributs HTML (border/cellpadding/valign/width), pas CSS, comme partout ailleurs
+    // dans ce fichier (le CSS est filtré par l'éditeur SportsRégions). Photo seule : centrée
+    // comme avant. Commentaire seul : paragraphe comme avant.
+    let mediaPart = '';
+    if (img && commentHtml) {
+      mediaPart = `<table align="center" border="0" cellpadding="8" cellspacing="0"><tr><td valign="middle" width="400">${img}</td><td valign="middle">${commentHtml}</td></tr></table>`;
+    } else if (img) {
+      mediaPart = `<p align="center">${img}</p>`;
+    } else if (commentHtml) {
+      mediaPart = `<p>${commentHtml}</p>`;
+    }
     return `<p>&nbsp;</p>
 <p style="background-color:#1a1a1a;color:#ffffff"><b>${label}</b></p>
 <p>${eq1} <b>${score}</b> ${eq2}</p>
-${photoPart}${commentPart}`;
+${mediaPart}`;
   }).join('\n');
 }
 
