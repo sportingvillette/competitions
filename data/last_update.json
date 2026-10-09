@@ -1,5 +1,5 @@
 {
-  "derniere_maj": "2026-10-08T03:13:43.959903+00:00",
+  "derniere_maj": "2026-10-09T03:16:11.350903+00:00",
   "mode": "complet",
   "equipes_rafraichies": [
     "Entente_Villette_Genas_A_M13_P1",
@@ -33,6 +33,9 @@
   ],
   "erreurs": [],
   "equipes_sans_match": [],
-  "equipes_rafraichies_sans_nouveau_match": [],
+  "equipes_rafraichies_sans_nouveau_match": [
+    "Entente_Lyon_Est_Handball_C_M13_P1",
+    "Entente_Est_Lyonnais_B_M18_P1"
+  ],
   "matchs_a_verifier": []
 }
