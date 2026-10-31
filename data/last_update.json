@@ -1,5 +1,5 @@
 {
-  "derniere_maj": "2026-10-30T02:55:21.255058+00:00",
+  "derniere_maj": "2026-10-31T02:37:45.123046+00:00",
   "mode": "complet",
   "equipes_rafraichies": [
     "Entente_Villette_Genas_A_M13_P1",
@@ -37,5 +37,8 @@
     "Entente_Lyon_Est_Handball_C_M13_P1",
     "Entente_Est_Lyonnais_B_M18_P1"
   ],
-  "matchs_a_verifier": []
+  "matchs_a_verifier": [
+    "Entente Lyon Est Handball C M13 (journée 4, 7 novembre 2026 au 8 novembre 2026)",
+    "Entente Est Lyonnais B M18 (journée 6, 7 novembre 2026 au 8 novembre 2026)"
+  ]
 }
