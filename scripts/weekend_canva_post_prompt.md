@@ -58,8 +58,16 @@ Le JSON contient :
   = numéro de journée FFHB, utile pour le contexte de la Phase 3, pas une
   colonne à afficher ; `us_side` = `"recevant"` ou `"visiteur"`, indique
   lequel des deux est notre club — utile en Phase 4 pour le souligner).
+  **Tournois M7/M9** : une ligne avec `tournoi: true` représente un plateau
+  entier (pas un match isolé, pas de score) — `jour` = heure du PREMIER match,
+  `recevant` = notre club, `visiteur` = `"Tournoi : A, B, C, ..."` (tous les
+  adversaires, séparés par des virgules, dans la même cellule). Cette cellule
+  est plus longue qu'un nom d'adversaire normal : la laisser passer sur 2 ou 3
+  lignes plutôt que de tronquer, et vérifier qu'elle ne déborde pas de la
+  ligne du tableau (réduire la taille du texte de cette seule cellule si
+  besoin). Souligner uniquement `recevant` (notre club), jamais la liste.
 - `domicile` : liste de lignes `{equipe, jour, recevant, visiteur,
-  us_side}` (matchs à domicile, toutes catégories, pour la page "à
+  us_side, tournoi}` (matchs à domicile, toutes catégories, pour la page "à
   Villette").
 - `stats` : signaux contextuels pour la Phase 3 (sous-titre de
   couverture) — voir cette phase pour le détail des champs.

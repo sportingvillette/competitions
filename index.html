@@ -1305,6 +1305,18 @@ function matchesUs(fieldValue, usName) {
   return a.includes(b) || b.includes(a);
 }
 
+// Ligne "tournoi" M7/M9 : journée "Tournoi N" (une ligne par plateau, extérieur = liste de tous les
+// adversaires, pas de score — voir collapse_to_tournaments dans scraper/scrape_ffhb_club.py).
+function isTournoiRow(r) {
+  return (r['journée'] || '').trim().toLowerCase().startsWith('tournoi');
+}
+// Libellé d'une ligne hors championnat ("Amical" / "Tournoi"), '' pour un vrai match de championnat.
+function horsChampionnatLabel(r) {
+  const j = (r['journée'] || '').trim().toLowerCase();
+  if (j === 'amical') return 'Amical';
+  return j.startsWith('tournoi') ? 'Tournoi' : '';
+}
+
 // Un match "DOM" (nous recevons, via l'entente) n'est pas forcément joué à Villette
 // d'Anthon — l'entente tourne entre les gymnases de ses clubs membres. Même critère que
 // build_weekend_payload.py (colonne "ville" contient "Villette d'Anthon"), avec en plus une
@@ -1337,7 +1349,7 @@ function renderCalendriersClassementsPage(mappingRows, classementsRows, calendri
   // des journées de championnat.
   function journeesJouees(r) {
     return calendrierRows.filter(c => keyMatch(c, r)
-      && (c['journée'] || '').trim().toLowerCase() !== 'amical'
+      && !horsChampionnatLabel(c)
       && (c['score'] || '').trim() !== '').length;
   }
   function poulePos(r) {
@@ -1489,8 +1501,7 @@ function renderWeekendResultsTable(rows, mappingRows, classementsRows, historyTe
     const score = r['score'] || '';
     // Un match amical n'a pas de classement de championnat associé à afficher — indiqué
     // explicitement plutôt que de laisser la case vide (demande de Julien).
-    const isAmical = (r['journée'] || '').trim().toLowerCase() === 'amical';
-    const classement = isAmical ? 'Amical' : classementCell(ref);
+    const classement = horsChampionnatLabel(r) || classementCell(ref);
     return `<tr><td><b>${section}</b><br>${label}</td><td>${dom}</td><td><b>${score}</b>${resultBadge(r, ref)}</td><td>${ext}</td><td>${classement}</td></tr>`;
   }).join('');
 
@@ -1605,8 +1616,8 @@ function summarizeWeekendForAI(resultRows, mappingRows, classementsRows, history
     const score = r['score'] || '';
     // Même règle "Amical" que renderWeekendResultsTable (classementCell) — ne pas laisser l'IA
     // recevoir/afficher un classement de championnat pour un match hors championnat.
-    const isAmical = (r['journée'] || '').trim().toLowerCase() === 'amical';
-    const suffix = isAmical ? ' (Amical)' : classementSuffix(ref);
+    const horsChamp = horsChampionnatLabel(r);
+    const suffix = horsChamp ? ` (${horsChamp})` : classementSuffix(ref);
     return `- ${label} : ${dom} ${score} ${ext}${suffix}`;
   });
 
@@ -1641,7 +1652,8 @@ function renderFFHBTable(rows) {
       dateLabel = r['date/heure'] || '';
     }
     const lieu = r['gymnase'] ? `${r['gymnase']}${r['ville'] ? ' — ' + r['ville'] : ''}` : '';
-    const score = String(r['score'] || '').trim() ? `<b>${r['score']}</b>` : '<span style="color:#999;">à venir</span>';
+    // Tournoi M7/M9 : on ne compte pas le score, jamais de "à venir" dans cette colonne.
+    const score = isTournoiRow(r) ? '<span style="color:#999;">—</span>' : (String(r['score'] || '').trim() ? `<b>${r['score']}</b>` : '<span style="color:#999;">à venir</span>');
     const classement = r['_classement'] || '<span style="color:#999;">—</span>';
     const domext = r['_domext'] || '<span style="color:#999;">—</span>';
     const adversaire = r['_adversaire'] || `${r['domicile']} – ${r['extérieur']}`;
@@ -1714,15 +1726,16 @@ async function attachClassementLabels(rows) {
     const posExt = pouleStarted ? findPosInPoule(poule, exterieur) : null;
 
     let domext = '';
-    if (usIsDomicile !== null) {
+    if (usIsDomicile !== null && !(isTournoiRow(r) && !r['ville'])) {
       domext = usIsDomicile ? (isVilletteDAnthon(r['ville']) ? 'VIL' : 'DOM') : 'EXT';
     }
 
     return {
       ...r,
-      _classement: (posDom && posExt) ? `${ordinalFr(posDom)} vs ${ordinalFr(posExt)}` : '',
+      _classement: isTournoiRow(r) ? 'Tournoi' : ((posDom && posExt) ? `${ordinalFr(posDom)} vs ${ordinalFr(posExt)}` : ''),
       _domext: domext,
-      _adversaire: opponentRaw ? cleanOpponentLabel(opponentRaw) : '',
+      // Tournoi : liste d'adversaires déjà nettoyée côté scraper, ne pas repasser cleanOpponentLabel.
+      _adversaire: opponentRaw ? (isTournoiRow(r) ? `Tournoi : ${opponentRaw}` : cleanOpponentLabel(opponentRaw)) : '',
     };
   });
 }
@@ -1931,18 +1944,20 @@ function renderCalendrierCompletTable(rows, ref, poule) {
       dateLabel = r['date/heure'] || '';
     }
     const lieu = r['gymnase'] ? `${r['gymnase']}${r['ville'] ? ' — ' + r['ville'] : ''}` : '';
-    const score = String(r['score'] || '').trim() ? `<b>${r['score']}</b>` : '<span style="color:#999;">à venir</span>';
+    // Tournoi M7/M9 : on ne compte pas le score, jamais de "à venir" dans cette colonne.
+    const score = isTournoiRow(r) ? '<span style="color:#999;">—</span>' : (String(r['score'] || '').trim() ? `<b>${r['score']}</b>` : '<span style="color:#999;">à venir</span>');
 
     const domicile = r['domicile'] || '';
     const exterieur = r['extérieur'] || '';
     const usIsDomicile = matchesUs(domicile, ref['equipe_ffhb_proposee']);
     const opponentRaw = usIsDomicile ? exterieur : domicile;
-    const adversaire = opponentRaw ? cleanOpponentLabel(opponentRaw) : `${domicile} – ${exterieur}`;
-    const domext = usIsDomicile ? (isVilletteDAnthon(r['ville']) ? 'VIL' : 'DOM') : 'EXT';
+    const adversaire = opponentRaw ? (isTournoiRow(r) ? `Tournoi : ${opponentRaw}` : cleanOpponentLabel(opponentRaw)) : `${domicile} – ${exterieur}`;
+    // Tournoi : pas de notion domicile/extérieur tant que le lieu n'est pas connu (plateau à plusieurs).
+    const domext = (isTournoiRow(r) && !r['ville']) ? '—' : (usIsDomicile ? (isVilletteDAnthon(r['ville']) ? 'VIL' : 'DOM') : 'EXT');
 
     const posDom = findPosInPoule(poule, domicile);
     const posExt = findPosInPoule(poule, exterieur);
-    const classement = (posDom && posExt) ? `${ordinalFr(posDom)} vs ${ordinalFr(posExt)}` : '<span style="color:#999;">—</span>';
+    const classement = isTournoiRow(r) ? 'Tournoi' : ((posDom && posExt) ? `${ordinalFr(posDom)} vs ${ordinalFr(posExt)}` : '<span style="color:#999;">—</span>');
 
     return `<tr><td>${r['journée']}</td><td>${classement}</td><td>${dateLabel}</td><td>${domext}</td><td>${adversaire}</td><td>${score}</td><td>${lieu}</td></tr>`;
   }).join('\n');

@@ -348,7 +348,14 @@ def build_payload(calendrier_source: str, team_mapping_source: str, today: date)
             or club_name.casefold() == exterieur_clean.casefold()
         )
 
-        if is_dom:
+        # Tournoi M7/M9 (journée "Tournoi N", voir collapse_to_tournaments côté scraper) : une
+        # seule ligne pour tout le plateau, extérieur = liste d'adversaires déjà nettoyés — ne
+        # surtout pas repasser clean_opponent_label dessus (il abîmerait l'indice du dernier nom).
+        is_tournoi = (row.get("journée", "") or "").strip().casefold().startswith("tournoi")
+
+        if is_tournoi and is_dom:
+            recevant, visiteur, us_home = club_name, f"Tournoi : {exterieur_raw}", True
+        elif is_dom:
             recevant, visiteur, us_home = club_name, clean_opponent_label(exterieur_raw), True
         elif is_ext:
             recevant, visiteur, us_home = clean_opponent_label(domicile_raw), club_name, False
@@ -370,13 +377,14 @@ def build_payload(calendrier_source: str, team_mapping_source: str, today: date)
             "lieu": lieu,
             "journee": (row.get("journée", "") or "").strip(),
             "us_side": "recevant" if us_home else "visiteur",
+            "tournoi": is_tournoi,
             "_sort": (CATEGORIE_SORT_ORDER.get(categorie, 99), GENRE_SORT_ORDER.get(genre, 9), indice),
         }
         pages[CATEGORIE_TO_PAGE[categorie]].append(entry)
         included_team_keys.add((section, indice, categorie, phase))
 
         if confirmee and is_villette_d_anthon(ville):
-            domicile.append({k: entry[k] for k in ("equipe", "jour", "recevant", "visiteur", "us_side", "_sort")})
+            domicile.append({k: entry[k] for k in ("equipe", "jour", "recevant", "visiteur", "us_side", "tournoi", "_sort")})
 
     for p in pages:
         pages[p].sort(key=lambda e: e["_sort"])
