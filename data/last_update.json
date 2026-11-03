@@ -1,14 +1,16 @@
 {
-  "derniere_maj": "2026-11-03T18:33:51.636100+00:00",
+  "derniere_maj": "2026-11-03T20:59:26.568027+00:00",
   "mode": "partiel",
   "equipes_rafraichies": [
-    "Sporting_Villette_A_Seniors_P1"
+    "Entente_Lyon_Est_Handball_C_M13_P1",
+    "Entente_Est_Lyonnais_B_M18_P1"
   ],
   "erreurs": [],
-  "equipes_sans_match": [],
+  "equipes_sans_match": [
+    "Sporting_Villette_M7_P1",
+    "Sporting_Villette_A_M9_P1",
+    "Sporting_Villette_B_M9_P1"
+  ],
   "equipes_rafraichies_sans_nouveau_match": [],
-  "matchs_a_verifier": [
-    "Entente Lyon Est Handball C M13 (journée 4, 7 novembre 2026 au 8 novembre 2026)",
-    "Entente Est Lyonnais B M18 (journée 6, 7 novembre 2026 au 8 novembre 2026)"
-  ]
+  "matchs_a_verifier": []
 }
