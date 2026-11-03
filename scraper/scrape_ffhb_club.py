@@ -513,8 +513,10 @@ def collapse_to_tournaments(team_df, t):
         for _, r in group.iterrows():
             dom, ext = _s(r.get("domicile", "")), _s(r.get("extérieur", ""))
             raw_opp = ext if team_name and team_name in dom.casefold() else dom
-            # Préfixe de niveau FFHB propre aux plateaux M9 ("INT - US MEYZIEU HANDBALL").
-            raw_opp = re.sub(r"^(?:INT|DEC|DÉC)\s*-\s*", "", raw_opp.strip(), flags=re.IGNORECASE)
+            # Préfixe de niveau FFHB propre aux plateaux M9 ("M9 Int - US MEYZIEU HANDBALL") : le
+            # "M9" initial est retiré avec lui (strip_category_prefix ne gère pas ce cas, son 2e
+            # mot doit être en majuscules).
+            raw_opp = re.sub(r"^(?:M\d+\s+)?(?:INT|DEC|DÉC)\s*-\s*", "", raw_opp.strip(), flags=re.IGNORECASE)
             opp = _format_clean_opponent(raw_opp)
             if opp and opp not in opponents:
                 opponents.append(opp)
