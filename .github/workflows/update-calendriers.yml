@@ -1,0 +1,113 @@
+name: Mise à jour page calendriers SportsRégions
+
+# Met à jour la page SportsRégions "Calendriers, résultats, classements" (scripts/
+# push_calendriers_classements.py) automatiquement après chaque run réussi du workflow
+# "Scrape FFHB" — mais seulement si ce run a effectivement modifié data/calendrier_club.csv
+# ou data/classements_club.csv (sinon rien à republier).
+#
+# Ne touche PAS aux fiches équipe : update-sportsregions.yml reste à déclenchement manuel.
+#
+# GitHub n'évalue workflow_run que depuis la branche par défaut (main) : ce workflow ne se
+# déclenchera automatiquement qu'une fois mergé. workflow_dispatch permet un lancement manuel
+# (dans ce cas la vérification "données modifiées" est sautée : on republie quoi qu'il arrive).
+#
+# Secrets requis (Settings > Secrets and variables > Actions) : SPORTSREGIONS_USERNAME,
+# SPORTSREGIONS_PASSWORD (les mêmes que update-sportsregions.yml).
+#
+# En cas d'échec : une issue (label maj-calendriers-alerte) est créée, ou commentée si elle
+# existe déjà et reste ouverte — même principe que l'alerte du workflow scrape-ffhb.yml.
+on:
+  workflow_run:
+    workflows: ["Scrape FFHB"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: update-calendriers
+  cancel-in-progress: false
+
+jobs:
+  update:
+    # Un run Scrape FFHB en échec ne déclenche rien (données potentiellement incomplètes).
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # 2 commits suffisent pour comparer le dernier commit à son parent.
+          fetch-depth: 2
+
+      - name: Vérifier que calendrier/classements ont changé
+        id: check
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            echo "Lancement manuel : mise à jour sans vérifier les fichiers modifiés."
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if git diff --name-only HEAD~1 HEAD | grep -qE '^data/(calendrier_club|classements_club)\.csv$'; then
+            echo "Le dernier commit a modifié calendrier_club.csv et/ou classements_club.csv."
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Ni calendrier_club.csv ni classements_club.csv modifiés par le dernier commit : rien à faire."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Attendre le déploiement GitHub Pages
+        # push_calendriers_classements.py génère le tableau à partir des CSV servis par
+        # GitHub Pages (pas depuis le checkout) : il faut que le dernier commit y soit déployé.
+        if: steps.check.outputs.changed == 'true'
+        run: sleep 120
+
+      - name: Python
+        if: steps.check.outputs.changed == 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Installer les dépendances
+        if: steps.check.outputs.changed == 'true'
+        run: |
+          pip install -r scripts/requirements-sportsregions.txt
+          playwright install --with-deps chromium
+
+      - name: Mettre à jour la page Calendriers, résultats, classements
+        if: steps.check.outputs.changed == 'true'
+        env:
+          SPORTSREGIONS_USERNAME: ${{ secrets.SPORTSREGIONS_USERNAME }}
+          SPORTSREGIONS_PASSWORD: ${{ secrets.SPORTSREGIONS_PASSWORD }}
+        run: python scripts/push_calendriers_classements.py
+
+      - name: Alerter en cas d'échec (issue GitHub)
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          LABEL="maj-calendriers-alerte"
+          TITLE="Échec de la mise à jour automatique de la page Calendriers SportsRégions"
+          gh label create "$LABEL" --color d73a4a \
+            --description "Échec de la mise à jour auto de la page calendriers SportsRégions" \
+            2>/dev/null || true
+          existing=$(gh issue list --label "$LABEL" --state open --json number --jq '.[0].number // empty')
+          body="Échec le $(date -u +'%Y-%m-%d %H:%M UTC').
+
+          Log du run : ${RUN_URL}
+
+          Causes probables : connexion SportsRégions refusée depuis l'IP du runner (2FA/CAPTCHA), identifiants expirés ou secrets absents, page admin modifiée. Relancer à la main (Actions > Mise à jour page calendriers SportsRégions > Run workflow) une fois corrigé."
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --body "$body"
+            echo "Commentaire ajouté sur l'issue #$existing."
+          else
+            gh issue create --title "$TITLE" --label "$LABEL" --body "$body"
+            echo "Nouvelle issue créée."
+          fi
