@@ -1,42 +1,12 @@
 {
-  "derniere_maj": "2026-11-03T07:06:57.435889+00:00",
-  "mode": "complet",
+  "derniere_maj": "2026-11-03T18:33:51.636100+00:00",
+  "mode": "partiel",
   "equipes_rafraichies": [
-    "Entente_Villette_Genas_A_M13_P1",
-    "Entente_Villette_Genas_C_M15_P1",
-    "Entente_Villette_Genas_D_M18_P1",
-    "Entente_Villette_Genas_C_M18_P1",
-    "Sporting_Villette_A_M11_P1",
-    "Sporting_Villette_B_M11_P1",
-    "Entente_Villette_Genas_B_M13_P1",
-    "Entente_Villette_Genas_C_M13_P1",
-    "Entente_Villette_Genas_D_M15_P1",
-    "Entente_Villette_Genas_E_M15_P1",
-    "Entente_Villette_Genas_F_M15_P1",
-    "Sporting_Villette_A_Seniors_P1",
-    "Entente_Lyon_Est_Handball_A_M11_P1",
-    "Entente_Lyon_Est_Handball_A_M13_P1",
-    "Entente_Lyon_Est_Handball_B_M13_P1",
-    "Entente_Lyon_Est_Handball_C_M13_P1",
-    "Entente_Lyon_Est_Handball_A_M15_P1",
-    "Entente_Lyon_Est_Handball_B_M15_P1",
-    "Entente_Est_Lyonnais_R_s_M15_P1",
-    "Entente_Est_Lyonnais_B_M15_P1",
-    "Entente_Lyon_Est_Handball_M16_P1",
-    "Entente_Est_Lyonnais_M17_P1",
-    "Entente_Lyon_Est_Handball_A_M18_P1",
-    "Entente_Lyon_Est_Handball_B_M18_P1",
-    "Entente_Est_Lyonnais_A_M18_P1",
-    "Entente_Est_Lyonnais_B_M18_P1",
-    "Entente_Lyon_Est_Handball_A_Seniors_P1",
-    "Entente_Lyon_Est_Handball_B_Seniors_P1"
+    "Sporting_Villette_A_Seniors_P1"
   ],
   "erreurs": [],
   "equipes_sans_match": [],
-  "equipes_rafraichies_sans_nouveau_match": [
-    "Entente_Lyon_Est_Handball_C_M13_P1",
-    "Entente_Est_Lyonnais_B_M18_P1"
-  ],
+  "equipes_rafraichies_sans_nouveau_match": [],
   "matchs_a_verifier": [
     "Entente Lyon Est Handball C M13 (journée 4, 7 novembre 2026 au 8 novembre 2026)",
     "Entente Est Lyonnais B M18 (journée 6, 7 novembre 2026 au 8 novembre 2026)"
