@@ -466,8 +466,104 @@ def _s(v) -> str:
         pass
     return str(v).strip()
 
+# Catégories jouées en tournois/plateaux (pas de match isolé, pas de score compté) : M7 et M9.
+# Sur la FFHB, un plateau est listé comme un round-robin (chaque équipe du plateau affronte
+# toutes les autres) — on le ramène à UNE ligne par tournoi : horaire du premier match + tous les
+# adversaires dans la même cellule (demande de Julien, 2026-11-03).
+TOURNOI_CATEGORIES = {"M7", "M9"}
+TOURNOI_PREFIX = "tournoi"
+
+
+def is_tournoi_team(t) -> bool:
+    """True pour une ligne de mapping dont la catégorie se joue en tournois (M7/M9)."""
+    return _s(t.get("categorie", "")).upper() in TOURNOI_CATEGORIES
+
+
+def is_tournoi_row(row) -> bool:
+    """True pour une ligne calendrier/sheet marquée journée="Tournoi N" (voir
+    collapse_to_tournaments) — marqueur analogue à journée="Amical"."""
+    return _s(row.get("journée", "")).casefold().startswith(TOURNOI_PREFIX)
+
+
+def _earliest_sort_key(row):
+    """Clé de tri chronologique d'une ligne calendrier : les matchs à date/heure confirmée
+    d'abord (du plus tôt au plus tard), puis ceux sans horaire connu (ordre d'origine)."""
+    d, h = parse_confirmed_date(_s(row.get("date/heure", "")))
+    if not d:
+        return (1, "")
+    dd, mm, yy = d.split("/")
+    return (0, f"{yy}-{mm}-{dd} {h}")
+
+
+def collapse_to_tournaments(team_df, t):
+    """Ramène les matchs d'une équipe M7/M9 à UNE ligne par tournoi (= par journée FFHB).
+
+    Une journée = un plateau : l'équipe y rencontre tous les autres participants. On garde la
+    ligne du premier match (date/heure, lien, gymnase/ville viennent de celle-là), le champ
+    domicile devient la section du club, extérieur la liste de tous les adversaires séparés
+    par ", " (noms nettoyés comme partout ailleurs) et score est vidé (on ne compte pas les
+    scores). journée devient "Tournoi N" (N = numéro de journée FFHB, sert aussi à rendre la
+    clé de la ligne dans la sheet Matchs stable, voir build_match_payload)."""
+    if team_df is None or team_df.empty:
+        return team_df
+    team_name = _s(t.get("equipe_ffhb_proposee", "")).casefold()
+    rows = []
+    for journee, group in team_df.groupby("journée", sort=True):
+        opponents = []
+        for _, r in group.iterrows():
+            dom, ext = _s(r.get("domicile", "")), _s(r.get("extérieur", ""))
+            raw_opp = ext if team_name and team_name in dom.casefold() else dom
+            # Préfixe de niveau FFHB propre aux plateaux M9 ("INT - US MEYZIEU HANDBALL").
+            raw_opp = re.sub(r"^(?:INT|DEC|DÉC)\s*-\s*", "", raw_opp.strip(), flags=re.IGNORECASE)
+            opp = _format_clean_opponent(raw_opp)
+            if opp and opp not in opponents:
+                opponents.append(opp)
+        # Ordre alphabétique : la FFHB liste les rencontres d'un plateau dans un ordre qui change
+        # d'une journée à l'autre, une liste triée est plus lisible et stable d'un scraping à l'autre.
+        opponents.sort(key=str.casefold)
+        first = min((r for _, r in group.iterrows()), key=_earliest_sort_key).copy()
+        first["journée"] = f"Tournoi {journee}"
+        first["domicile"] = _s(t.get("section", ""))
+        first["extérieur"] = ", ".join(opponents)
+        first["score"] = ""
+        rows.append(first)
+    return pd.DataFrame(rows).reset_index(drop=True)
+
+
+def build_tournoi_payload(row, t) -> dict:
+    """Payload sheet Matchs d'un tournoi (ligne issue de collapse_to_tournaments). Pas de score.
+    Code Gesthand synthétique et STABLE (poule + équipe + numéro de journée) : le code d'un
+    match FFHB (rencontre-XXXX) ne convient pas, le "premier match" du plateau peut changer
+    quand la FFHB confirme les horaires, ce qui créerait un doublon dans la sheet."""
+    lien = _s(row.get("lien", ""))
+    m_poule = re.search(r"poule-(\d+)", lien)
+    m_j = re.search(r"(\d+)\s*$", _s(row.get("journée", "")))
+    if not m_poule or not m_j:
+        return None
+    date_ddmmyyyy, heure = parse_confirmed_date(_s(row.get("date/heure", "")))
+    return {
+        "code": f"tournoi-{m_poule.group(1)}-{_s(t.get('id', ''))}-J{m_j.group(1)}",
+        "categorie": _s(t.get("categorie", "")),
+        "genre": _s(t.get("genre", "")),
+        "index": _s(t.get("indice", "")),
+        "championnat": _s(t.get("niveau", "")),
+        "poule": "" if _s(t.get("poule_num", "")).casefold() == "nan" else _s(t.get("poule_num", "")),
+        "journee": _s(row.get("journée", "")),
+        "eq1": _s(t.get("section", "")), "eq1x": _s(t.get("indice", "")),
+        "eq2": _s(row.get("extérieur", "")), "eq2x": "",
+        "date": date_ddmmyyyy or "",
+        "heure": heure or "",
+        "gymnase": _s(row.get("gymnase", "")),
+        "ville": _s(row.get("ville", "")),
+        "eq1score": "", "eq2score": "", "winlose": "",
+    }
+
+
 def build_match_payload(row, t) -> dict:
     """Construit le payload JSON pour un match scrapé, prêt à envoyer au Web App."""
+    if is_tournoi_row(row):
+        return build_tournoi_payload(row, t)
+
     ffhb_id = extract_ffhb_id(_s(row.get("lien", "")))
     if not ffhb_id:
         return None
@@ -610,6 +706,10 @@ def scrape_one_mapping_row(page, poule_cache: dict, salle_cache: dict, t: dict, 
         )
         team_df = calendrier[mask].reset_index(drop=True)
         if not team_df.empty:
+            if is_tournoi_team(t):
+                # M7/M9 : une ligne par tournoi AVANT enrich_salle, qui visite la page détail de
+                # chaque ligne (1 seule visite par tournoi au lieu d'une par match du plateau).
+                team_df = collapse_to_tournaments(team_df, t)
             team_df = enrich_salle(page, team_df, salle_cache, on_match=on_match)
             team_df.insert(0, "phase", t["phase"])
             team_df.insert(0, "categorie", t["categorie"])
@@ -622,8 +722,11 @@ def scrape_one_mapping_row(page, poule_cache: dict, salle_cache: dict, t: dict, 
             # sheet, jamais avant : build_match_payload() compare domicile/extérieur BRUTS à
             # equipe_ffhb_proposee (égalité stricte) pour savoir quel côté est nous — nettoyer
             # plus tôt casserait cette comparaison pour CHAQUE match du club.
-            team_df["domicile"] = team_df["domicile"].apply(_format_clean_opponent)
-            team_df["extérieur"] = team_df["extérieur"].apply(_format_clean_opponent)
+            if not is_tournoi_team(t):
+                # Un tournoi (M7/M9) est déjà propre : extérieur = liste d'adversaires nettoyés,
+                # une 2e passe de nettoyage ne ferait que l'abîmer (indice en suffixe, etc.).
+                team_df["domicile"] = team_df["domicile"].apply(_format_clean_opponent)
+                team_df["extérieur"] = team_df["extérieur"].apply(_format_clean_opponent)
             team_calendrier = team_df
         else:
             print("  ⚠ Aucun match trouvé pour ce nom d'équipe dans la poule (mapping probablement faux).")
