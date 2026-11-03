@@ -1,16 +1,13 @@
 {
-  "derniere_maj": "2026-11-03T20:59:26.568027+00:00",
+  "derniere_maj": "2026-11-03T21:23:03.909113+00:00",
   "mode": "partiel",
   "equipes_rafraichies": [
-    "Entente_Lyon_Est_Handball_C_M13_P1",
-    "Entente_Est_Lyonnais_B_M18_P1"
-  ],
-  "erreurs": [],
-  "equipes_sans_match": [
     "Sporting_Villette_M7_P1",
     "Sporting_Villette_A_M9_P1",
     "Sporting_Villette_B_M9_P1"
   ],
+  "erreurs": [],
+  "equipes_sans_match": [],
   "equipes_rafraichies_sans_nouveau_match": [],
   "matchs_a_verifier": []
 }
