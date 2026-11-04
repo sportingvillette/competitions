@@ -62,8 +62,9 @@ WEEKDAY_ABBR_FR = {0: "Lun", 1: "Mar", 2: "Mer", 3: "Jeu", 4: "Ven", 5: "Sam", 6
 KNOWN_ACRONYMS = {"HBC", "AS", "US", "CS", "ASUL", "UODL", "CSAV", "HB", "RC", "IDA"}
 # Code de catégorie d'âge accolé au nom d'un club adverse (ex. "IDA U18F") — retiré, pas
 # juste re-casé (pas plus légitime qu'un préfixe de poule standard). Dupliqué depuis
-# scraper/scrape_ffhb.py, voir ce fichier pour le détail du pourquoi.
-CATEGORY_CODE_RE = re.compile(r"^(\(?)([UM]\d{1,2}[FGM]?)(\)?)$", re.IGNORECASE)
+# scraper/scrape_ffhb.py, voir ce fichier pour le détail du pourquoi (y compris le format
+# départemental à tiret : "-11g2 US MEYZIEU HANDBALL", "HBC CREMIEU -9m").
+CATEGORY_CODE_RE = re.compile(r"^(\(?)(?:[UM]\d{1,2}[FGM]?|-\d{1,2}[FGM]?\d?)(\)?)$", re.IGNORECASE)
 FR_LOWER_WORDS = {"de", "du", "des", "et", "en"}
 # 'la'/'le'/'les' volontairement exclus : trop souvent le début d'un nom
 # propre composé dans les noms de club/lieu FFHB (ex. "Chambéry La Motte

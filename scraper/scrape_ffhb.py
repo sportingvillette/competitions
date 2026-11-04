@@ -60,7 +60,10 @@ _KNOWN_ACRONYMS = {"HBC", "AS", "US", "CS", "ASUL", "UODL", "CSAV", "HB", "RC", 
 # qu'un préfixe de poule FFHB standard ("M16F EXC - X"), déjà retiré par
 # strip_category_prefix : retiré ici aussi, jamais juste re-casé (Julien, 2026-09-02 —
 # "IDA U18F" doit devenir "IDA", pas "IDA U18F" avec une casse correcte).
-_CATEGORY_CODE_RE = re.compile(r"^(\(?)([UM]\d{1,2}[FGM]?)(\)?)$", re.IGNORECASE)
+# Même règle pour le format départemental à tiret ("-11g2 US MEYZIEU HANDBALL", "HBC CREMIEU
+# -9m" : -âge + lettre de genre + n° d'équipe optionnels) — Julien, 2026-11-04 : sur le post
+# du week-end, "-11g2 US Meyzieu Handball" doit devenir "US Meyzieu Handball".
+_CATEGORY_CODE_RE = re.compile(r"^(\(?)(?:[UM]\d{1,2}[FGM]?|-\d{1,2}[FGM]?\d?)(\)?)$", re.IGNORECASE)
 _FR_LOWER_WORDS = {"de", "du", "des", "et", "en"}
 # 'la'/'le'/'les' volontairement exclus : trop souvent le début d'un nom
 # propre composé dans les noms de club/lieu FFHB (ex. "Chambéry La Motte
