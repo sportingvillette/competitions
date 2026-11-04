@@ -1267,8 +1267,13 @@ function splitTrailingIndex(name) {
   if (m && m[1].length > 3) return { base: m[1].replace(/[\s-]+$/, '').trim(), index: m[2] };
   return { base: (name || '').trim(), index: '' };
 }
+// Code d'âge départemental à tiret accolé au nom d'un adversaire ("-11g2 US Meyzieu Handball",
+// "HBC Cremieu -9m") : retiré à l'affichage, comme côté Python (_CATEGORY_CODE_RE dans
+// scrape_ffhb.py, build_weekend_payload.py) — Julien, 2026-11-04.
+const _AGE_CODE_WORD_RE = /^-\d{1,2}[FGM]?\d?$/i;
 function cleanOpponentLabel(raw) {
-  const stripped = stripCategoryPrefix((raw || '').trim());
+  const noAgeCode = (raw || '').trim().split(/\s+/).filter(w => w && !_AGE_CODE_WORD_RE.test(w)).join(' ');
+  const stripped = stripCategoryPrefix(noAgeCode);
   const { base, index } = splitTrailingIndex(stripped);
   return index ? `${base} - ${index}` : base;
 }
