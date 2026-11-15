@@ -19,13 +19,13 @@ Usage :
 `list` n'affiche QUE les matchs avec score final + `PhotoEq` renseignés ET
 `Story résultat` encore vide — "pas de photo -> pas de story", point. La
 règle est appliquée ici, pas laissée à l'appréciation de qui lit la sortie.
+Les tournois M7/M9 (Journée "Tournoi N", pas de score compté) sont exclus.
 
-`--window-only` : la tâche planifiée (Cowork) tourne toutes les heures en
-continu (son planificateur ne sait pas restreindre à des créneaux), donc
-c'est ce script qui refuse de travailler hors des créneaux de match voulus
-par Julien (samedi 12h-23h, dimanche 11h-17h, heure de Paris) — sort tout
-de suite sans même aller lire le CSV si on est hors créneau, plutôt que de
-compter sur le prompt Cowork pour deviner l'heure correctement.
+Plus aucune restriction horaire (2026-11-15, demande de Julien : la tâche est
+désormais lancée surtout à la main, à n'importe quelle heure). Avant, `--window-only`
+faisait refuser tout travail hors du samedi 12h-23h / dimanche 11h-17h (heure de Paris).
+L'option est conservée UNIQUEMENT pour qu'un ancien prompt de tâche qui la passe encore
+ne plante pas : elle est ignorée (avertissement sur stderr).
 """
 
 import argparse
@@ -36,9 +36,6 @@ import sys
 import urllib.request
 import urllib.parse
 from datetime import datetime, timezone
-from zoneinfo import ZoneInfo
-
-PARIS_TZ = ZoneInfo("Europe/Paris")
 
 MATCHS_CSV_URL = (
     "https://docs.google.com/spreadsheets/d/e/"
@@ -55,22 +52,6 @@ def _read_csv(url: str) -> list:
     with urllib.request.urlopen(url, timeout=30) as resp:
         raw = resp.read().decode("utf-8-sig")
     return list(csv.DictReader(io.StringIO(raw)))
-
-
-def in_scheduled_window(now: datetime = None) -> bool:
-    """Créneaux voulus par Julien pour cette routine horaire : samedi
-    12h-23h, dimanche 11h-17h, heure de Paris (jamais le fuseau système du
-    sandbox d'exécution, pas fiable). Bornes incluses des deux côtés."""
-    if now is None:
-        now = datetime.now(PARIS_TZ)
-    elif now.tzinfo is None:
-        now = now.replace(tzinfo=PARIS_TZ)
-    weekday = now.weekday()  # Monday=0 ... Sunday=6
-    if weekday == 5:  # samedi
-        return 12 <= now.hour <= 23
-    if weekday == 6:  # dimanche
-        return 11 <= now.hour <= 17
-    return False
 
 
 def equipe_label(categorie: str, genre: str, indice: str) -> str:
@@ -98,6 +79,12 @@ def find_eligible(rows: list) -> list:
             continue  # déjà traité
         if not match_id:
             continue  # pas d'identifiant fiable pour marquer le match ensuite
+        if (r.get("Journée", "") or "").strip().casefold().startswith("tournoi"):
+            # Tournoi M7/M9 : on ne compte pas le score. Le formulaire du club enregistre quand même
+            # un "0 - 0 / Match Nul" quand on y ajoute la photo (constaté le 2026-11-15 sur les
+            # tournois M9 du 7 novembre) : sans cette exclusion, une story "Match nul 0-0"
+            # serait générée pour un plateau.
+            continue
 
         eligible.append({
             "match_id": match_id,
@@ -140,9 +127,8 @@ def main():
     p_list.add_argument("--out", default="-", help="Fichier de sortie JSON ('-' = stdout)")
     p_list.add_argument(
         "--window-only", action="store_true",
-        help="Ne fait rien (sort avec matches: []) si on est hors des créneaux de match "
-             "voulus (sam 12h-23h, dim 11h-17h, heure de Paris) — pour une tâche planifiée "
-             "qui tourne toutes les heures en continu.",
+        help="OBSOLÈTE, ignoré : il n'y a plus de restriction horaire (conservé pour qu'un "
+             "ancien prompt qui le passe encore ne plante pas).",
     )
 
     p_mark = sub.add_parser("mark-done", help="Marque un match comme ayant sa story générée")
@@ -152,20 +138,8 @@ def main():
     args = ap.parse_args()
 
     if args.command == "list":
-        if args.window_only and not in_scheduled_window():
-            now = datetime.now(PARIS_TZ)
-            print(
-                f"Hors créneau ({now.strftime('%A %H:%M')} heure de Paris) — "
-                "rien fait, pas même de lecture du CSV.",
-                file=sys.stderr,
-            )
-            out_text = json.dumps({"matches": [], "skipped_out_of_window": True}, ensure_ascii=False, indent=2)
-            if args.out == "-":
-                print(out_text)
-            else:
-                with open(args.out, "w", encoding="utf-8") as f:
-                    f.write(out_text)
-            return
+        if args.window_only:
+            print("--window-only est obsolète et ignoré (plus de restriction horaire).", file=sys.stderr)
 
         rows = _read_csv(args.matchs)
         eligible = find_eligible(rows)
