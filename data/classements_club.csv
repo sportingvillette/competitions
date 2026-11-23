@@ -20,15 +20,15 @@ Entente Villette Genas,D,M18,P1,2,AS GENAY HANDBALL,17
 Entente Villette Genas,D,M18,P1,3,VAULX EN VELIN HANDBALL CLUB,15
 Entente Villette Genas,D,M18,P1,4,M18M EXC - ENTENTE GENAS-VILLETTE B,7
 Entente Villette Genas,D,M18,P1,5,COTIERE HANDBALL,5
-Entente Villette Genas,C,M18,P1,1,M18M EXC - ENTENTE CORBAS - ST PRIEST - CHAPONNAY,17
-Entente Villette Genas,C,M18,P1,2,HANDBALL CLUB DE LYON,15
-Entente Villette Genas,C,M18,P1,3,PAYS VOIRONNAIS HANDBALL 1,12
+Entente Villette Genas,C,M18,P1,1,HANDBALL CLUB DE LYON,18
+Entente Villette Genas,C,M18,P1,2,M18M EXC - ENTENTE CORBAS - ST PRIEST - CHAPONNAY,17
+Entente Villette Genas,C,M18,P1,3,PAYS VOIRONNAIS HANDBALL 1,13
 Entente Villette Genas,C,M18,P1,4,M18M EXC - ENTENTE GENAS - VILLETTE,8
 Entente Villette Genas,C,M18,P1,5,CS BOURGOIN JALLIEU HB,8
-Sporting Villette,A,M11,P1,1,ES GENAS AZIEU HB 1,12
-Sporting Villette,A,M11,P1,2,-11G2 US MEYZIEU HANDBALL,10
-Sporting Villette,A,M11,P1,3,SPORTING VILLETTE M11G INT,8
-Sporting Villette,A,M11,P1,4,CHAPONNAY,8
+Sporting Villette,A,M11,P1,1,-11G2 US MEYZIEU HANDBALL,13
+Sporting Villette,A,M11,P1,2,ES GENAS AZIEU HB 1,12
+Sporting Villette,A,M11,P1,3,CHAPONNAY,9
+Sporting Villette,A,M11,P1,4,SPORTING VILLETTE M11G INT,8
 Sporting Villette,A,M11,P1,5,ST PRIEST HANDBALL INTERMEDIAIRE,6
 Sporting Villette,A,M11,P1,6,HBC CORBAS,5
 Sporting Villette,A,M11,P1,7,HBC CREMIEU -11M,3
@@ -37,8 +37,8 @@ Sporting Villette,B,M11,P1,2,SPORTING VILLETTE M11G DEC,10
 Sporting Villette,B,M11,P1,3,VENISSIEUX HANDBALL,9
 Sporting Villette,B,M11,P1,4,BRON HANDBALL,8
 Sporting Villette,B,M11,P1,5,ES GENAS AZIEU HB 3,8
-Sporting Villette,B,M11,P1,6,HBC ECHALAS M11M DEC 2,3
-Sporting Villette,B,M11,P1,7,ST PRIEST HANDBALL,3
+Sporting Villette,B,M11,P1,6,HBC ECHALAS M11M DEC 2,6
+Sporting Villette,B,M11,P1,7,ST PRIEST HANDBALL,4
 Entente Villette Genas,B,M13,P1,1,M13M DIV RTE - ENTENTE GENAS - VILLETTE 2,10
 Entente Villette Genas,B,M13,P1,2,HANDBALL GLEIZE SAINT JULIEN DENICE,10
 Entente Villette Genas,B,M13,P1,3,LYON HANDBALL M13M DIVISION,10
@@ -103,9 +103,9 @@ Entente Lyon Est Handball,C,M13,P1,1,MERMOZ F13,13
 Entente Lyon Est Handball,C,M13,P1,2,M13 FEM ST FONS,12
 Entente Lyon Est Handball,C,M13,P1,3,ISLE D'ABEAU SPORTS HANDBALL U13F,8
 Entente Lyon Est Handball,C,M13,P1,4,M13F DIV - ENTENTE LYON EST HANDBALL (3),8
-Entente Lyon Est Handball,C,M13,P1,5,AS MARCY-CHARBO,7
-Entente Lyon Est Handball,C,M13,P1,6,VENISSIEUX HANDBALL,4
-Entente Lyon Est Handball,C,M13,P1,7,MORNANT HBC,4
+Entente Lyon Est Handball,C,M13,P1,5,MORNANT HBC,7
+Entente Lyon Est Handball,C,M13,P1,6,AS MARCY-CHARBO,7
+Entente Lyon Est Handball,C,M13,P1,7,VENISSIEUX HANDBALL,4
 Entente Lyon Est Handball,A,M15,P1,1,PAYS VOIRONNAIS HANDBALL 1,22
 Entente Lyon Est Handball,A,M15,P1,2,HBC ECHIROLLES-EYBENS,20
 Entente Lyon Est Handball,A,M15,P1,3,MEYLAN HANDBALL 1,17
@@ -125,11 +125,11 @@ Entente Est Lyonnais,Rés.,M15,P1,2,VILLEURBANNE HANDBALL ASSOCIATION,15
 Entente Est Lyonnais,Rés.,M15,P1,3,ST GENIS LAVAL AL HANDBALL -15 RESERVE,14
 Entente Est Lyonnais,Rés.,M15,P1,4,UODL HANDBALL,12
 Entente Est Lyonnais,Rés.,M15,P1,5,M15M EXC - ENTENTE NORD ISERE (RESERVE),7
-Entente Est Lyonnais,B,M15,P1,1,SAINT GENIX AOSTE HB 1,21
+Entente Est Lyonnais,B,M15,P1,1,SAINT GENIX AOSTE HB 1,24
 Entente Est Lyonnais,B,M15,P1,2,M15M EXC - ENTENTE EST LYONNAIS,20
 Entente Est Lyonnais,B,M15,P1,3,M15M CHAPONNAY,16
 Entente Est Lyonnais,B,M15,P1,4,HANDBALL CLUB DE LYON,15
-Entente Est Lyonnais,B,M15,P1,5,BELLEY HBC,10
+Entente Est Lyonnais,B,M15,P1,5,BELLEY HBC,11
 Entente Est Lyonnais,B,M15,P1,6,MERMOZ G15A,10
 Entente Lyon Est Handball,,M16,P1,1,ANNECY CSAV HANDBALL,23
 Entente Lyon Est Handball,,M16,P1,2,M16F EXC - ENTENTE POISY - ANNECY,21
@@ -163,10 +163,10 @@ Entente Est Lyonnais,A,M18,P1,4,UODL HANDBALL,11
 Entente Est Lyonnais,A,M18,P1,5,ISTRES PROVENCE HANDBALL,11
 Entente Est Lyonnais,A,M18,P1,6,MONTELIMAR CLUB HANDBALL,7
 Entente Est Lyonnais,B,M18,P1,1,M18M EXC - ENTENTE EST LYONNAIS,20
-Entente Est Lyonnais,B,M18,P1,2,ROANNE RIORGES HANDBALL 1,18
-Entente Est Lyonnais,B,M18,P1,3,M18M EXC - ENTENTE LIMAS/VHB,17
-Entente Est Lyonnais,B,M18,P1,4,M18M EXC - ENTENTE NORD BEAUJOLAIS 1,14
-Entente Est Lyonnais,B,M18,P1,5,Trévoux - U18 Excellence,14
+Entente Est Lyonnais,B,M18,P1,2,M18M EXC - ENTENTE LIMAS/VHB,20
+Entente Est Lyonnais,B,M18,P1,3,ROANNE RIORGES HANDBALL 1,18
+Entente Est Lyonnais,B,M18,P1,4,Trévoux - U18 Excellence,15
+Entente Est Lyonnais,B,M18,P1,5,M18M EXC - ENTENTE NORD BEAUJOLAIS 1,14
 Entente Est Lyonnais,B,M18,P1,6,CIVRIEUX HANDBALL CLUB,9
 Entente Lyon Est Handball,A,Seniors,P1,1,AMBERIEU HBC,17
 Entente Lyon Est Handball,A,Seniors,P1,2,HANDBALL CLUB DE LYON,16
@@ -197,40 +197,40 @@ Sporting Villette,,M7,P1,6,HBC ST LAURENT DE CHAMOUSSET,0
 Sporting Villette,,M7,P1,7,VENISSIEUX HANDBALL,0
 Sporting Villette,,M7,P1,8,SPORTING VILLETTE M7 MIXTE,0
 Sporting Villette,,M7,P1,9,VILLEFRANCHE HANDBALL BEAUJOLAIS,0
-Sporting Villette,A,M9,P1,1,U9 HBC ST CYR ST DIDIER,6
-Sporting Villette,A,M9,P1,2,HANDBALL CLUB DE LYON 1,4
-Sporting Villette,A,M9,P1,3,AS MARCY-CHARBO,4
-Sporting Villette,A,M9,P1,4,HANDBALL CLUB DE LYON 2,4
-Sporting Villette,A,M9,P1,5,HANDALL GLEIZE SAINT JULIEN DENICE,3
-Sporting Villette,A,M9,P1,6,AMPLEPUIS HBC,3
-Sporting Villette,A,M9,P1,7,LYON HANDBALL M9 DECOUVERTE,2
-Sporting Villette,A,M9,P1,8,GENAY AS HANDBALL,2
-Sporting Villette,A,M9,P1,9,LYON 5 HANDBALL,2
-Sporting Villette,A,M9,P1,10,SPHB1 DEC,2
-Sporting Villette,A,M9,P1,11,SPHB2 DEC,2
-Sporting Villette,A,M9,P1,12,U9 - Pays de l'arbresle DECOUVerte,2
-Sporting Villette,A,M9,P1,13,CIVRIEUX HANDBALL CLUB,2
-Sporting Villette,A,M9,P1,14,UODL HB 4,0
-Sporting Villette,A,M9,P1,15,ES GENAS AZIEU Hb -9 découverte,0
-Sporting Villette,A,M9,P1,16,ES GENAS AZIEU HB -9 découverte 2,0
-Sporting Villette,A,M9,P1,17,M09 MIXTE DECOUV,0
-Sporting Villette,A,M9,P1,18,HBCE M9 DEC 1,0
-Sporting Villette,A,M9,P1,19,HBCE M9 DEC 2,0
-Sporting Villette,A,M9,P1,20,GENAY AS HANDBALL 2,0
-Sporting Villette,A,M9,P1,21,BEAUJOLAIS VAL DE SAONE HANDBALL,0
-Sporting Villette,A,M9,P1,22,M9 MIONS HB DECOUVERTES,0
-Sporting Villette,A,M9,P1,23,M9 MIONS HB DECOUVERTES (2),0
-Sporting Villette,A,M9,P1,24,BRON HANDBALL,0
-Sporting Villette,A,M9,P1,25,SPORTING VILLETTE M9 DEC,0
-Sporting Villette,A,M9,P1,26,MORNANT HBC,0
-Sporting Villette,A,M9,P1,27,CSL TARARE HANDBALL,0
-Sporting Villette,A,M9,P1,28,HANDBALL CLUB PAYS VIENNOIS,0
-Sporting Villette,A,M9,P1,29,DRACE HANDBALL AS 2,0
-Sporting Villette,A,M9,P1,30,DECINES HANDBALL CLUB,0
-Sporting Villette,A,M9,P1,31,ST FONS M9 MIXTE,0
-Sporting Villette,A,M9,P1,32,QUINCIEUX HANDBALL,0
-Sporting Villette,A,M9,P1,33,ST GEORGES HANDBALL,0
-Sporting Villette,A,M9,P1,34,M9 DECOUVERTE - HEYRIEUX,0
+Sporting Villette,A,M9,P1,1,LYON HANDBALL M9 DECOUVERTE,6
+Sporting Villette,A,M9,P1,2,U9 HBC ST CYR ST DIDIER,6
+Sporting Villette,A,M9,P1,3,HANDBALL CLUB DE LYON 1,4
+Sporting Villette,A,M9,P1,4,AS MARCY-CHARBO,4
+Sporting Villette,A,M9,P1,5,LYON 5 HANDBALL,4
+Sporting Villette,A,M9,P1,6,SPHB2 DEC,4
+Sporting Villette,A,M9,P1,7,HANDBALL CLUB DE LYON 2,4
+Sporting Villette,A,M9,P1,8,HANDALL GLEIZE SAINT JULIEN DENICE,3
+Sporting Villette,A,M9,P1,9,AMPLEPUIS HBC,3
+Sporting Villette,A,M9,P1,10,GENAY AS HANDBALL,2
+Sporting Villette,A,M9,P1,11,M9 MIONS HB DECOUVERTES,2
+Sporting Villette,A,M9,P1,12,M9 MIONS HB DECOUVERTES (2),2
+Sporting Villette,A,M9,P1,13,U9 - Pays de l'arbresle DECOUVerte,2
+Sporting Villette,A,M9,P1,14,HANDBALL CLUB PAYS VIENNOIS,2
+Sporting Villette,A,M9,P1,15,DECINES HANDBALL CLUB,2
+Sporting Villette,A,M9,P1,16,ST FONS M9 MIXTE,2
+Sporting Villette,A,M9,P1,17,M9 DECOUVERTE - HEYRIEUX,2
+Sporting Villette,A,M9,P1,18,CIVRIEUX HANDBALL CLUB,2
+Sporting Villette,A,M9,P1,19,SPHB1 DEC,2
+Sporting Villette,A,M9,P1,20,UODL HB 4,0
+Sporting Villette,A,M9,P1,21,ES GENAS AZIEU Hb -9 découverte,0
+Sporting Villette,A,M9,P1,22,ES GENAS AZIEU HB -9 découverte 2,0
+Sporting Villette,A,M9,P1,23,M09 MIXTE DECOUV,0
+Sporting Villette,A,M9,P1,24,HBCE M9 DEC 1,0
+Sporting Villette,A,M9,P1,25,HBCE M9 DEC 2,0
+Sporting Villette,A,M9,P1,26,GENAY AS HANDBALL 2,0
+Sporting Villette,A,M9,P1,27,BEAUJOLAIS VAL DE SAONE HANDBALL,0
+Sporting Villette,A,M9,P1,28,BRON HANDBALL,0
+Sporting Villette,A,M9,P1,29,SPORTING VILLETTE M9 DEC,0
+Sporting Villette,A,M9,P1,30,MORNANT HBC,0
+Sporting Villette,A,M9,P1,31,CSL TARARE HANDBALL,0
+Sporting Villette,A,M9,P1,32,DRACE HANDBALL AS 2,0
+Sporting Villette,A,M9,P1,33,QUINCIEUX HANDBALL,0
+Sporting Villette,A,M9,P1,34,ST GEORGES HANDBALL,0
 Sporting Villette,B,M9,P1,1,HBC CREMIEU -9M (1),8
 Sporting Villette,B,M9,P1,2,HBC CREMIEU -9M (2),8
 Sporting Villette,B,M9,P1,3,M9 Mixte Saint Maurice l'EXIL,6
